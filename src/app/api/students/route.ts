@@ -3,7 +3,7 @@ import fs from 'fs/promises';
 import path from 'path';
 
 const dataFilePath = path.join(process.cwd(), 'data', 'students.json');
-const GAS_URL = process.env.NEXT_PUBLIC_GAS_URL;
+const GAS_URL = process.env.GAS_URL || process.env.NEXT_PUBLIC_GAS_URL;
 
 async function getStudentsData() {
   try {
