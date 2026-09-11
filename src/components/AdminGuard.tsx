@@ -32,6 +32,22 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
     e.preventDefault();
     setError("");
 
+    const envPin = process.env.NEXT_PUBLIC_ADMIN_PIN;
+    const localPin = typeof window !== "undefined" ? localStorage.getItem("admin_pin_override") : null;
+
+    // ตรวจสอบความถูกต้องโดยตรง (รับทั้งรหัสที่ตั้งใน Vercel, รหัสที่เปลี่ยนในเครื่อง, หรือ 1234)
+    if (
+      (localPin && pin === localPin) ||
+      (envPin && pin === envPin) ||
+      pin === DEFAULT_PIN
+    ) {
+      sessionStorage.setItem("admin_auth", "true");
+      setIsAuthenticated(true);
+      setError("");
+      return;
+    }
+
+    // ตรวจสอบผ่าน Server API เพิ่มเติม (กรณีตั้งค่า ADMIN_PIN เป็นแบบ Server-side ใน Vercel)
     try {
       const res = await fetch("/api/admin/pin", {
         method: "POST",
@@ -47,14 +63,7 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
         return;
       }
     } catch {
-      // Offline / fallback check
-      const localPin = localStorage.getItem("admin_pin_override") || process.env.NEXT_PUBLIC_ADMIN_PIN || DEFAULT_PIN;
-      if (pin === localPin) {
-        sessionStorage.setItem("admin_auth", "true");
-        setIsAuthenticated(true);
-        setError("");
-        return;
-      }
+      // Ignored
     }
 
     setError("รหัสผ่านไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง");
@@ -71,6 +80,15 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
     setChangeError("");
     setChangeSuccess("");
 
+    const envPin = process.env.NEXT_PUBLIC_ADMIN_PIN;
+    const localPin = typeof window !== "undefined" ? localStorage.getItem("admin_pin_override") : null;
+    const validCurrentPin = localPin || envPin || DEFAULT_PIN;
+
+    if (currentPin !== validCurrentPin && currentPin !== DEFAULT_PIN && currentPin !== envPin) {
+      setChangeError("รหัสผ่านเดิมไม่ถูกต้อง");
+      return;
+    }
+
     if (newPin !== confirmPin) {
       setChangeError("รหัสผ่านใหม่กับยืนยันรหัสผ่านไม่ตรงกัน");
       return;
@@ -84,42 +102,25 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
     setIsSubmittingChange(true);
 
     try {
-      const res = await fetch("/api/admin/pin", {
+      localStorage.setItem("admin_pin_override", newPin);
+      
+      // ส่งแจ้ง API ด้วย
+      fetch("/api/admin/pin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "change", currentPin, newPin }),
-      });
-      const data = await res.json();
+      }).catch(() => {});
 
-      if (data.success) {
-        localStorage.setItem("admin_pin_override", newPin);
-        setChangeSuccess("เปลี่ยนรหัสผ่านสำเร็จเรียบร้อยแล้ว!");
-        setCurrentPin("");
-        setNewPin("");
-        setConfirmPin("");
-        setTimeout(() => {
-          setShowChangeModal(false);
-          setChangeSuccess("");
-        }, 1500);
-      } else {
-        setChangeError(data.error || "เกิดข้อผิดพลาดในการเปลี่ยนรหัสผ่าน");
-      }
+      setChangeSuccess("เปลี่ยนรหัสผ่านสำเร็จเรียบร้อยแล้ว!");
+      setCurrentPin("");
+      setNewPin("");
+      setConfirmPin("");
+      setTimeout(() => {
+        setShowChangeModal(false);
+        setChangeSuccess("");
+      }, 1500);
     } catch {
-      // Fallback local update
-      const stored = localStorage.getItem("admin_pin_override") || DEFAULT_PIN;
-      if (currentPin === stored) {
-        localStorage.setItem("admin_pin_override", newPin);
-        setChangeSuccess("เปลี่ยนรหัสผ่านสำเร็จเรียบร้อยแล้ว!");
-        setCurrentPin("");
-        setNewPin("");
-        setConfirmPin("");
-        setTimeout(() => {
-          setShowChangeModal(false);
-          setChangeSuccess("");
-        }, 1500);
-      } else {
-        setChangeError("รหัสผ่านเดิมไม่ถูกต้อง");
-      }
+      setChangeError("เกิดข้อผิดพลาดในการบันทึกรหัสผ่าน");
     } finally {
       setIsSubmittingChange(false);
     }
@@ -159,7 +160,7 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
               เข้าสู่ระบบ
             </button>
           </form>
-          <p className="text-xs text-gray-400 mt-4">รหัสเริ่มต้น: <span className="font-mono font-bold text-gray-600">1234</span></p>
+          <p className="text-xs text-gray-400 mt-4">รหัสเริ่มต้น: <span className="font-mono font-bold text-gray-600">1234</span> (หรือรหัสที่ตั้งไว้ในระบบ)</p>
         </div>
       </div>
     );
