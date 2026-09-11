@@ -146,11 +146,11 @@ export default function AdminDashboard() {
           <img src="/school-logo.jpg" alt="โรงเรียนปากช่อง" className="h-28 object-contain mix-blend-multiply" />
           
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/msp-logo.jpg" alt="โครงการห้องเรียนพิเศษวิทยาศาสตร์สุขภาพและการแพทย์ (MSP)" className="h-24 object-contain mix-blend-multiply" />
+          <img src="/smte-pakchong-logo.png" alt="SMTE Pakchong" className="h-24 object-contain mix-blend-multiply" />
         </div>
         <div className="text-center mt-3 mb-5 px-10">
           <p className="text-2xl font-extrabold text-gray-900 tracking-wide leading-relaxed">
-            โครงการห้องเรียนพิเศษวิทยาศาสตร์สุขภาพและการแพทย์
+            โครงการห้องเรียนพิเศษวิทยาศาสตร์ คณิตศาสตร์ เทคโนโลยี และสิ่งแวดล้อม (SMTE)
           </p>
           <p className="text-xl font-bold text-gray-900 mt-1">ระดับมัธยมศึกษาตอนปลาย</p>
         </div>
