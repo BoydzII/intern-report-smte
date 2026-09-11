@@ -159,7 +159,7 @@ export default function AdminDashboard() {
           <select 
             value={filterType} 
             onChange={e => setFilterType(e.target.value as any)}
-            className="border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none w-full"
+            className="border border-gray-300 bg-white text-gray-900 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none w-full"
           >
             <option value="all">ตลอดช่วงเวลาฝึก (ทั้งหมด)</option>
             <option value="daily">รายวัน</option>
@@ -174,7 +174,7 @@ export default function AdminDashboard() {
               type="date" 
               value={filterDate}
               onChange={e => setFilterDate(e.target.value)}
-              className="border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none w-full"
+              className="border border-gray-300 bg-white text-gray-900 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none w-full"
             />
           </div>
         )}
@@ -187,7 +187,7 @@ export default function AdminDashboard() {
             type="text" 
             value={term}
             onChange={e => setTerm(e.target.value)}
-            className="border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none w-20 text-center"
+            className="border border-gray-300 bg-white text-gray-900 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none w-20 text-center"
             placeholder="1"
           />
         </div>
@@ -197,7 +197,7 @@ export default function AdminDashboard() {
             type="text" 
             value={academicYear}
             onChange={e => setAcademicYear(e.target.value)}
-            className="border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none w-28 text-center"
+            className="border border-gray-300 bg-white text-gray-900 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none w-28 text-center"
             placeholder="2569"
           />
         </div>
@@ -207,7 +207,7 @@ export default function AdminDashboard() {
             type="text" 
             value={teacherName}
             onChange={e => setTeacherName(e.target.value)}
-            className="border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none w-full"
+            className="border border-gray-300 bg-white text-gray-900 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none w-full"
             placeholder="เช่น นายคุณครู ใจดี"
           />
         </div>

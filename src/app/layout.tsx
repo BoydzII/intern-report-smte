@@ -13,6 +13,9 @@ export const metadata: Metadata = {
   title: "Internship Report System",
   description: "Offline-first application for daily internship reporting.",
   manifest: "/manifest.json",
+  other: {
+    "color-scheme": "light",
+  },
 };
 
 export default function RootLayout({
@@ -21,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="th">
+    <html lang="th" style={{ colorScheme: "light" }}>
       <body
         className={`${sarabun.variable} antialiased bg-gray-50 min-h-screen text-gray-800`}
       >

@@ -153,20 +153,20 @@ export default function ManageStudentsPage() {
             <form onSubmit={handleAdd} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">เลขประจำตัวนักเรียน</label>
-                <input type="text" value={studentId} onChange={e => setStudentId(e.target.value)} className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none" required />
+                <input type="text" value={studentId} onChange={e => setStudentId(e.target.value)} className="w-full bg-white text-gray-900 border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none" required />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">ชื่อ-นามสกุล</label>
-                <input type="text" value={name} onChange={e => setName(e.target.value)} className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none" required />
+                <input type="text" value={name} onChange={e => setName(e.target.value)} className="w-full bg-white text-gray-900 border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none" required />
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">ชั้น</label>
-                  <input type="text" value={grade} onChange={e => setGrade(e.target.value)} className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none" />
+                  <input type="text" value={grade} onChange={e => setGrade(e.target.value)} className="w-full bg-white text-gray-900 border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">เลขที่</label>
-                  <input type="text" value={studentNumber} onChange={e => setStudentNumber(e.target.value)} className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none" />
+                  <input type="text" value={studentNumber} onChange={e => setStudentNumber(e.target.value)} className="w-full bg-white text-gray-900 border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none" />
                 </div>
               </div>
               <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 font-medium transition">

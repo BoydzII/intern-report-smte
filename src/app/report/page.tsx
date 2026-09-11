@@ -99,7 +99,7 @@ export default function ReportPage() {
               type="text"
               value={internName}
               onChange={(e) => setInternName(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+              className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
               placeholder="เช่น นาย สมชาย ใจดี"
               required
             />
@@ -112,7 +112,7 @@ export default function ReportPage() {
                 type="text"
                 value={studentId}
                 onChange={(e) => setStudentId(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                 placeholder="เช่น 12345"
                 required
               />
@@ -123,7 +123,7 @@ export default function ReportPage() {
                 type="text"
                 value={studentNumber}
                 onChange={(e) => setStudentNumber(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                 placeholder="เช่น 12"
                 required
               />
@@ -136,7 +136,7 @@ export default function ReportPage() {
               type="text"
               value={grade}
               onChange={(e) => setGrade(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+              className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
               placeholder="เช่น ม.4/1"
               required
             />
@@ -153,7 +153,7 @@ export default function ReportPage() {
               type="text"
               value={department}
               onChange={(e) => setDepartment(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+              className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
               placeholder="เช่น โรงพยาบาลปากช่องนานา (แผนก IT)"
               required
             />
@@ -165,7 +165,7 @@ export default function ReportPage() {
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+              className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
               required
             />
           </div>
