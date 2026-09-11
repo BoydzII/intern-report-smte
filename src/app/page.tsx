@@ -12,12 +12,12 @@ export default function Home() {
           <img src="/school-logo.jpg" alt="โรงเรียนปากช่อง" className="h-24 md:h-28 object-contain mix-blend-multiply" />
           
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/smte-pakchong-logo.png" alt="SMTE Pakchong School" className="h-20 md:h-24 object-contain mix-blend-multiply" />
+          <img src="/msp-logo.jpg" alt="โครงการห้องเรียนพิเศษวิทยาศาสตร์สุขภาพและการแพทย์ (MSP)" className="h-20 md:h-24 object-contain mix-blend-multiply" />
         </div>
         
         <div className="text-center mt-3">
           <p className="text-lg md:text-xl font-extrabold text-blue-900 tracking-wide">
-            โครงการห้องเรียนพิเศษวิทยาศาสตร์ คณิตศาสตร์ เทคโนโลยี และสิ่งแวดล้อม (SMTE)
+            โครงการห้องเรียนพิเศษวิทยาศาสตร์สุขภาพและการแพทย์
           </p>
           <p className="text-base md:text-lg font-bold text-blue-800 mt-1">ระดับมัธยมศึกษาตอนปลาย</p>
         </div>

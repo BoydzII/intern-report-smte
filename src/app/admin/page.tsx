@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { Download, Printer, Users } from "lucide-react";
+import { Download, Printer, Users, Trash2 } from "lucide-react";
 import { startOfWeek, endOfWeek, isWithinInterval } from "date-fns";
 import Link from "next/link";
 
@@ -93,6 +93,21 @@ export default function AdminDashboard() {
     return students.filter(s => !submittedIds.includes(s.studentId));
   }, [filteredReports, students, filterType]);
 
+  const handleDeleteReport = async (id: string, name: string) => {
+    if (!confirm(`คุณต้องการลบข้อมูลรายงานของ "${name}" ใช่หรือไม่?`)) return;
+    try {
+      const res = await fetch(`/api/reports?id=${id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (data.success) {
+        setReports(prev => prev.filter(r => r.id !== id));
+      } else {
+        alert("ลบไม่สำเร็จ: " + (data.error || "เกิดข้อผิดพลาด"));
+      }
+    } catch (err) {
+      alert("เกิดข้อผิดพลาดในการลบข้อมูล");
+    }
+  };
+
   const exportCSV = () => {
     if (filteredReports.length === 0) return;
     
@@ -131,11 +146,11 @@ export default function AdminDashboard() {
           <img src="/school-logo.jpg" alt="โรงเรียนปากช่อง" className="h-28 object-contain mix-blend-multiply" />
           
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/smte-pakchong-logo.png" alt="SMTE Pakchong" className="h-24 object-contain mix-blend-multiply" />
+          <img src="/msp-logo.jpg" alt="โครงการห้องเรียนพิเศษวิทยาศาสตร์สุขภาพและการแพทย์ (MSP)" className="h-24 object-contain mix-blend-multiply" />
         </div>
         <div className="text-center mt-3 mb-5 px-10">
           <p className="text-2xl font-extrabold text-gray-900 tracking-wide leading-relaxed">
-            โครงการห้องเรียนพิเศษวิทยาศาสตร์ คณิตศาสตร์ เทคโนโลยี และสิ่งแวดล้อม (SMTE)
+            โครงการห้องเรียนพิเศษวิทยาศาสตร์สุขภาพและการแพทย์
           </p>
           <p className="text-xl font-bold text-gray-900 mt-1">ระดับมัธยมศึกษาตอนปลาย</p>
         </div>
@@ -285,7 +300,17 @@ export default function AdminDashboard() {
                       className="w-full h-48 object-cover bg-gray-100 print:h-40"
                     />
                     <div className="p-5 flex-1 print:p-3">
-                      <h3 className="font-bold text-lg text-gray-800 print:text-base">{report.intern.firstName}</h3>
+                      <div className="flex justify-between items-start gap-2">
+                        <h3 className="font-bold text-lg text-gray-800 print:text-base">{report.intern.firstName}</h3>
+                        <button
+                          onClick={() => handleDeleteReport(report.id, report.intern.firstName)}
+                          className="print:hidden text-red-600 hover:text-red-800 hover:bg-red-50 px-2 py-1 rounded-lg transition flex items-center gap-1 text-xs border border-red-200 shadow-sm"
+                          title="ลบรายงานนี้"
+                        >
+                          <Trash2 size={14} />
+                          <span>ลบข้อมูล</span>
+                        </button>
+                      </div>
                       <div className="flex flex-wrap gap-x-3 gap-y-1 text-sm text-gray-600 mb-2 mt-1 print:text-xs">
                         <span>เลขประจำตัวนักเรียน: <span className="font-medium">{report.intern.studentId || '-'}</span></span>
                         <span>ชั้น: <span className="font-medium">{report.intern.grade || '-'}</span></span>

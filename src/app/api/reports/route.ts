@@ -75,3 +75,27 @@ export async function GET() {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
+
+export async function DELETE(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+    if (!id) return NextResponse.json({ success: false, error: 'Missing report id' }, { status: 400 });
+
+    if (GAS_URL) {
+      const res = await fetch(GAS_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'deleteReport', id }),
+      });
+      const result = await res.json();
+      return NextResponse.json(result);
+    }
+
+    const reports = await getReportsData();
+    const filtered = reports.filter((r: any) => r.id !== id);
+    await saveReportsData(filtered);
+    return NextResponse.json({ success: true, reports: filtered });
+  } catch (error: any) {
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  }
+}
