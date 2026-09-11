@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Lock, LogOut } from "lucide-react";
+import { Lock, LogOut, KeyRound, X, CheckCircle2 } from "lucide-react";
 
-// รหัสผ่านเริ่มต้นสำหรับแอดมิน (สามารถเปลี่ยนตรงนี้ หรือตั้งใน Environment Variable: NEXT_PUBLIC_ADMIN_PIN ได้ครับ)
 const DEFAULT_PIN = "1234";
 
 export default function AdminGuard({ children }: { children: React.ReactNode }) {
@@ -11,6 +10,15 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
   const [pin, setPin] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+
+  // State สำหรับ Modal เปลี่ยนรหัสผ่าน
+  const [showChangeModal, setShowChangeModal] = useState(false);
+  const [currentPin, setCurrentPin] = useState("");
+  const [newPin, setNewPin] = useState("");
+  const [confirmPin, setConfirmPin] = useState("");
+  const [changeError, setChangeError] = useState("");
+  const [changeSuccess, setChangeSuccess] = useState("");
+  const [isSubmittingChange, setIsSubmittingChange] = useState(false);
 
   useEffect(() => {
     const auth = sessionStorage.getItem("admin_auth");
@@ -20,22 +28,101 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
     setIsLoading(false);
   }, []);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const correctPin = process.env.NEXT_PUBLIC_ADMIN_PIN || DEFAULT_PIN;
-    if (pin === correctPin) {
-      sessionStorage.setItem("admin_auth", "true");
-      setIsAuthenticated(true);
-      setError("");
-    } else {
-      setError("รหัสผ่านไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง");
-      setPin("");
+    setError("");
+
+    try {
+      const res = await fetch("/api/admin/pin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "verify", pin }),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        sessionStorage.setItem("admin_auth", "true");
+        setIsAuthenticated(true);
+        setError("");
+        return;
+      }
+    } catch {
+      // Offline / fallback check
+      const localPin = localStorage.getItem("admin_pin_override") || process.env.NEXT_PUBLIC_ADMIN_PIN || DEFAULT_PIN;
+      if (pin === localPin) {
+        sessionStorage.setItem("admin_auth", "true");
+        setIsAuthenticated(true);
+        setError("");
+        return;
+      }
     }
+
+    setError("รหัสผ่านไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง");
+    setPin("");
   };
 
   const handleLogout = () => {
     sessionStorage.removeItem("admin_auth");
     setIsAuthenticated(false);
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setChangeError("");
+    setChangeSuccess("");
+
+    if (newPin !== confirmPin) {
+      setChangeError("รหัสผ่านใหม่กับยืนยันรหัสผ่านไม่ตรงกัน");
+      return;
+    }
+
+    if (newPin.length < 4) {
+      setChangeError("รหัสผ่านใหม่ต้องมีความยาวอย่างน้อย 4 ตัวอักษร");
+      return;
+    }
+
+    setIsSubmittingChange(true);
+
+    try {
+      const res = await fetch("/api/admin/pin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "change", currentPin, newPin }),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        localStorage.setItem("admin_pin_override", newPin);
+        setChangeSuccess("เปลี่ยนรหัสผ่านสำเร็จเรียบร้อยแล้ว!");
+        setCurrentPin("");
+        setNewPin("");
+        setConfirmPin("");
+        setTimeout(() => {
+          setShowChangeModal(false);
+          setChangeSuccess("");
+        }, 1500);
+      } else {
+        setChangeError(data.error || "เกิดข้อผิดพลาดในการเปลี่ยนรหัสผ่าน");
+      }
+    } catch {
+      // Fallback local update
+      const stored = localStorage.getItem("admin_pin_override") || DEFAULT_PIN;
+      if (currentPin === stored) {
+        localStorage.setItem("admin_pin_override", newPin);
+        setChangeSuccess("เปลี่ยนรหัสผ่านสำเร็จเรียบร้อยแล้ว!");
+        setCurrentPin("");
+        setNewPin("");
+        setConfirmPin("");
+        setTimeout(() => {
+          setShowChangeModal(false);
+          setChangeSuccess("");
+        }, 1500);
+      } else {
+        setChangeError("รหัสผ่านเดิมไม่ถูกต้อง");
+      }
+    } finally {
+      setIsSubmittingChange(false);
+    }
   };
 
   if (isLoading) {
@@ -69,7 +156,7 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
               type="submit"
               className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-xl transition shadow-md active:scale-95"
             >
-              ยืนยันรหัสผ่าน
+              เข้าสู่ระบบ
             </button>
           </form>
           <p className="text-xs text-gray-400 mt-4">รหัสเริ่มต้น: <span className="font-mono font-bold text-gray-600">1234</span></p>
@@ -80,15 +167,121 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
 
   return (
     <div>
-      <div className="print:hidden flex justify-end mb-2">
+      {/* Top Admin Bar */}
+      <div className="print:hidden flex justify-end items-center gap-2 mb-3">
+        <button
+          onClick={() => {
+            setShowChangeModal(true);
+            setChangeError("");
+            setChangeSuccess("");
+          }}
+          className="text-xs text-blue-700 hover:text-blue-900 flex items-center gap-1.5 bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-lg shadow-sm transition hover:bg-blue-100 font-medium"
+        >
+          <KeyRound size={14} />
+          <span>เปลี่ยนรหัสผ่านแอดมิน</span>
+        </button>
+
         <button
           onClick={handleLogout}
-          className="text-xs text-gray-500 hover:text-red-600 flex items-center gap-1 bg-white border border-gray-200 px-3 py-1.5 rounded-lg shadow-sm transition hover:bg-red-50"
+          className="text-xs text-gray-600 hover:text-red-600 flex items-center gap-1.5 bg-white border border-gray-200 px-3 py-1.5 rounded-lg shadow-sm transition hover:bg-red-50 font-medium"
         >
           <LogOut size={14} />
-          <span>ออกจากระบบแอดมิน</span>
+          <span>ออกจากระบบ</span>
         </button>
       </div>
+
+      {/* Modal เปลี่ยนรหัสผ่าน */}
+      {showChangeModal && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 max-w-md w-full p-6 relative animate-in fade-in zoom-in-95 duration-150">
+            <button
+              onClick={() => setShowChangeModal(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition"
+            >
+              <X size={20} />
+            </button>
+
+            <div className="flex items-center gap-3 mb-5 border-b pb-3">
+              <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
+                <KeyRound size={20} />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-800">เปลี่ยนรหัสผ่านแอดมิน</h3>
+                <p className="text-xs text-gray-500">กำหนดรหัสผ่านใหม่เพื่อความปลอดภัย</p>
+              </div>
+            </div>
+
+            {changeSuccess ? (
+              <div className="bg-green-50 border border-green-200 text-green-700 p-4 rounded-xl flex items-center gap-3 text-sm my-4">
+                <CheckCircle2 size={20} className="text-green-600 shrink-0" />
+                <span>{changeSuccess}</span>
+              </div>
+            ) : (
+              <form onSubmit={handleChangePassword} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">รหัสผ่านเดิม</label>
+                  <input
+                    type="password"
+                    value={currentPin}
+                    onChange={(e) => setCurrentPin(e.target.value)}
+                    placeholder="รหัสผ่านปัจจุบัน (เช่น 1234)"
+                    className="w-full bg-white text-gray-900 border border-gray-300 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">รหัสผ่านใหม่ (อย่างน้อย 4 ตัวอักษร)</label>
+                  <input
+                    type="password"
+                    value={newPin}
+                    onChange={(e) => setNewPin(e.target.value)}
+                    placeholder="กรอกรหัสผ่านใหม่"
+                    className="w-full bg-white text-gray-900 border border-gray-300 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">ยืนยันรหัสผ่านใหม่</label>
+                  <input
+                    type="password"
+                    value={confirmPin}
+                    onChange={(e) => setConfirmPin(e.target.value)}
+                    placeholder="กรอกรหัสผ่านใหม่อีกครั้ง"
+                    className="w-full bg-white text-gray-900 border border-gray-300 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                    required
+                  />
+                </div>
+
+                {changeError && (
+                  <p className="text-red-600 text-xs font-medium bg-red-50 p-2.5 rounded-lg border border-red-100">
+                    {changeError}
+                  </p>
+                )}
+
+                <div className="flex gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowChangeModal(false)}
+                    className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2.5 rounded-xl transition text-sm"
+                  >
+                    ยกเลิก
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmittingChange}
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-medium py-2.5 rounded-xl transition text-sm shadow-sm"
+                  >
+                    {isSubmittingChange ? "กำลังบันทึก..." : "บันทึกรหัสใหม่"}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
       {children}
     </div>
   );
