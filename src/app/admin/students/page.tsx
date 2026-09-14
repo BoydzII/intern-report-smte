@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
-import { ArrowLeft, UserPlus, Trash2, FileUp } from "lucide-react";
+import { ArrowLeft, UserPlus, Trash2, FileUp, Download } from "lucide-react";
 import * as XLSX from "xlsx";
 
 type Student = {
@@ -115,6 +115,20 @@ export default function ManageStudentsPage() {
     reader.readAsBinaryString(file);
   };
 
+  const downloadTemplate = () => {
+    const templateData = [
+      { "เลขประจำตัว": "35001", "ชื่อ-นามสกุล": "นายสมชาย ใจดี", "ชั้น": "ม.4/1", "เลขที่": "1" },
+      { "เลขประจำตัว": "35002", "ชื่อ-นามสกุล": "นางสาวสมหญิง รักเรียน", "ชั้น": "ม.4/1", "เลขที่": "2" },
+      { "เลขประจำตัว": "35003", "ชื่อ-นามสกุล": "นายวิทยา ก้าวหน้า", "ชั้น": "ม.4/1", "เลขที่": "3" },
+      { "เลขประจำตัว": "35004", "ชื่อ-นามสกุล": "นางสาวนภาพร สดใส", "ชั้น": "ม.4/1", "เลขที่": "4" },
+      { "เลขประจำตัว": "35005", "ชื่อ-นามสกุล": "นายธนกฤต มั่นคง", "ชั้น": "ม.4/1", "เลขที่": "5" }
+    ];
+    const ws = XLSX.utils.json_to_sheet(templateData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "รายชื่อนักเรียน");
+    XLSX.writeFile(wb, "ตัวอย่างไฟล์นำเข้ารายชื่อนักเรียน.xlsx");
+  };
+
   const handleDelete = async (id: string) => {
     if (!confirm("คุณต้องการลบรายชื่อนี้ใช่หรือไม่?")) return;
     
@@ -182,6 +196,17 @@ export default function ManageStudentsPage() {
             <p className="text-sm text-green-700 mb-4">
               ใช้ไฟล์ .xlsx หรือ .csv โดยต้องมีหัวคอลัมน์แถวแรกชื่อ <b>เลขประจำตัว</b> และ <b>ชื่อ-นามสกุล</b> (สามารถมี <b>ชั้น</b>, <b>เลขที่</b> ด้วยได้)
             </p>
+
+            <div className="bg-white/80 p-3 rounded-lg border border-green-200 text-xs text-green-900 mb-4">
+              <p className="font-bold mb-1.5 text-green-800">โครงสร้างหัวตาราง (แถวที่ 1):</p>
+              <div className="grid grid-cols-4 gap-1 text-center font-medium bg-green-100/70 p-1.5 rounded border border-green-200">
+                <span>เลขประจำตัว</span>
+                <span>ชื่อ-นามสกุล</span>
+                <span>ชั้น</span>
+                <span>เลขที่</span>
+              </div>
+            </div>
+
             <input 
               type="file" 
               accept=".xlsx,.xls,.csv" 
@@ -189,12 +214,23 @@ export default function ManageStudentsPage() {
               onChange={handleFileUpload}
               className="hidden" 
             />
-            <button 
-              onClick={() => fileInputRef.current?.click()}
-              className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 font-medium transition flex items-center justify-center gap-2"
-            >
-              <FileUp size={18} /> เลือกไฟล์ Excel
-            </button>
+
+            <div className="space-y-2">
+              <button 
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full bg-green-600 text-white py-2.5 rounded-lg hover:bg-green-700 font-medium transition flex items-center justify-center gap-2 shadow-sm"
+              >
+                <FileUp size={18} /> เลือกไฟล์ Excel เพื่อนำเข้า
+              </button>
+
+              <button 
+                type="button"
+                onClick={downloadTemplate}
+                className="w-full bg-white text-green-700 border border-green-300 py-2 rounded-lg hover:bg-green-100/50 font-medium transition flex items-center justify-center gap-2 text-sm shadow-xs"
+              >
+                <Download size={16} /> ดาวน์โหลดไฟล์ตัวอย่าง (.xlsx)
+              </button>
+            </div>
           </div>
         </div>
 
