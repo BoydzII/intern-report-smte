@@ -76,6 +76,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true, students: updated });
     }
 
+    if (data.action === 'clear_all' || data.action === 'delete_all') {
+      await saveStudentsData([]);
+      return NextResponse.json({ success: true, students: [] });
+    }
+
     return NextResponse.json({ success: false, error: "Invalid action" }, { status: 400 });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });

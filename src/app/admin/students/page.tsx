@@ -147,6 +147,29 @@ export default function ManageStudentsPage() {
     }
   };
 
+  const handleDeleteAll = async () => {
+    if (students.length === 0) return;
+    if (!confirm(`⚠️ ยืนยันการลบรายชื่อนักเรียนทั้งหมด (${students.length} คน) หรือไม่?\n\nข้อมูลที่ลบไปแล้วจะไม่สามารถกู้คืนได้`)) return;
+
+    try {
+      const res = await fetch("/api/students", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "clear_all" }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setStudents([]);
+        alert("ลบรายชื่อนักเรียนทั้งหมดเรียบร้อยแล้ว");
+      } else {
+        alert("เกิดข้อผิดพลาด: " + (data.error || "ลบไม่สำเร็จ"));
+      }
+    } catch (error) {
+      console.error(error);
+      alert("เกิดข้อผิดพลาดในการเชื่อมต่อ");
+    }
+  };
+
   return (
     <div className="max-w-4xl mx-auto mt-4">
       <div className="mb-6 flex items-center justify-between">
@@ -236,7 +259,20 @@ export default function ManageStudentsPage() {
 
         {/* Student List */}
         <div className="md:col-span-2 bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-          <h2 className="text-lg font-bold text-gray-800 mb-4">รายชื่อทั้งหมด ({students.length} คน)</h2>
+          <div className="flex justify-between items-center mb-4 pb-2 border-b border-gray-100">
+            <h2 className="text-lg font-bold text-gray-800">รายชื่อทั้งหมด ({students.length} คน)</h2>
+            {students.length > 0 && (
+              <button
+                type="button"
+                onClick={handleDeleteAll}
+                className="text-xs text-red-600 hover:text-white hover:bg-red-600 px-3 py-1.5 rounded-lg border border-red-200 hover:border-red-600 transition flex items-center gap-1.5 font-medium shadow-xs"
+                title="ลบรายชื่อนักเรียนทั้งหมดในระบบ"
+              >
+                <Trash2 size={14} />
+                <span>ลบรายชื่อทั้งหมด</span>
+              </button>
+            )}
+          </div>
           
           {loading ? (
             <p className="text-gray-500 text-center py-8">กำลังโหลดข้อมูล...</p>
