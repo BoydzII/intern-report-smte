@@ -26,13 +26,36 @@ export async function POST(request: Request) {
 
     // If Google Apps Script is configured, send data there
     if (GAS_URL) {
+      // --- DUPLICATE CHECK ---
+      try {
+        const checkRes = await fetch(`${GAS_URL}?action=getReports`, { cache: 'no-store', next: { revalidate: 0 } });
+        const checkResult = await checkRes.json();
+        
+        if (checkResult.success && checkResult.reports) {
+          const submitDate = String(data.date).split('T')[0];
+          const isDuplicate = checkResult.reports.some((r: any) => {
+            if (!r.date) return false;
+            const rDate = String(r.date).split('T')[0];
+            return String(r.intern.studentId) === String(data.studentId) && rDate === submitDate;
+          });
+          
+          if (isDuplicate) {
+            console.log(`Duplicate submission prevented for student ${data.studentId} on ${submitDate}`);
+            return NextResponse.json({ success: true, message: "Already submitted today" });
+          }
+        }
+      } catch (checkError) {
+        console.error("Failed to check for duplicates, proceeding anyway", checkError);
+      }
+      // -----------------------
+
       data.action = 'addReport';
       const res = await fetch(GAS_URL, {
         method: 'POST',
-        body: JSON.stringify(data),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
       });
-      const result = await res.json();
-      return NextResponse.json(result);
+      return NextResponse.json(await res.json());
     }
 
     // Otherwise use Local JSON
