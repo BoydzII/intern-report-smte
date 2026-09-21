@@ -35,8 +35,16 @@ export async function POST(request: Request) {
           const submitDate = String(data.date).split('T')[0];
           const isDuplicate = checkResult.reports.some((r: any) => {
             if (!r.date) return false;
-            const rDate = String(r.date).split('T')[0];
-            return String(r.intern.studentId) === String(data.studentId) && rDate === submitDate;
+            // Parse r.date in local time (handling Google Sheets UTC offset bug)
+            const rDateObj = new Date(r.date);
+            
+            // submitDate is "YYYY-MM-DD", let's extract YYYY, MM, DD from rDateObj locally
+            const rYear = rDateObj.getFullYear();
+            const rMonth = String(rDateObj.getMonth() + 1).padStart(2, '0');
+            const rDay = String(rDateObj.getDate()).padStart(2, '0');
+            const rDateStr = `${rYear}-${rMonth}-${rDay}`;
+            
+            return String(r.intern.studentId) === String(data.studentId) && rDateStr === submitDate;
           });
           
           if (isDuplicate) {

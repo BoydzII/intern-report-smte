@@ -70,7 +70,11 @@ export default function AdminDashboard() {
       const selectedDate = new Date(filterDate);
       
       if (filterType === "daily") {
-        return reportDate.toISOString().split("T")[0] === selectedDate.toISOString().split("T")[0];
+        const d1 = reportDate;
+        const d2 = selectedDate;
+        return d1.getFullYear() === d2.getFullYear() && 
+               d1.getMonth() === d2.getMonth() && 
+               d1.getDate() === d2.getDate();
       }
       
       if (filterType === "weekly") {
