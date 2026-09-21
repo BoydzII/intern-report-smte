@@ -274,7 +274,7 @@ export default function AdminDashboard() {
                     {missingStudents.map(ms => (
                       <div key={ms.id} className="text-sm bg-red-50/50 border border-red-100 px-3 py-2 rounded-md text-red-900 flex justify-between">
                         <span>{ms.name}</span>
-                        <span className="text-red-700/70 text-xs">ม.{ms.grade} ลข.{ms.studentNumber}</span>
+                        <span className="text-red-700/70 text-xs">{ms.grade} ({ms.studentNumber})</span>
                       </div>
                     ))}
                   </div>
