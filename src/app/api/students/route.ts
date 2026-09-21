@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import fs from 'fs/promises';
 import path from 'path';
@@ -22,7 +23,7 @@ async function saveStudentsData(data: any) {
 export async function GET() {
   try {
     if (GAS_URL) {
-      const res = await fetch(`${GAS_URL}?action=getStudents`);
+      const res = await fetch(`${GAS_URL}?action=getStudents`, { cache: 'no-store', next: { revalidate: 0 } });
       const result = await res.json();
       return NextResponse.json(result);
     }

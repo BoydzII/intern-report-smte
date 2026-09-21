@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import fs from 'fs/promises';
 import path from 'path';
@@ -62,7 +63,7 @@ export async function POST(request: Request) {
 export async function GET() {
   try {
     if (GAS_URL) {
-      const res = await fetch(`${GAS_URL}?action=getReports`);
+      const res = await fetch(`${GAS_URL}?action=getReports`, { cache: 'no-store', next: { revalidate: 0 } });
       const result = await res.json();
       result.reports.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
       return NextResponse.json(result);

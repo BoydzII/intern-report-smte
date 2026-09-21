@@ -28,7 +28,7 @@ export default function ManageStudentsPage() {
 
   const fetchStudents = async () => {
     try {
-      const res = await fetch("/api/students");
+      const res = await fetch("/api/students", { cache: "no-store" });
       const data = await res.json();
       if (data.success) {
         setStudents(data.students);

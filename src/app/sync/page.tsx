@@ -44,11 +44,21 @@ export default function SyncPage() {
         });
 
         if (response.ok) {
-          await clearDraftReport(draft.id);
-          successCount++;
+          const result = await response.json();
+          if (result.success) {
+            await clearDraftReport(draft.id);
+            successCount++;
+          } else {
+            console.error("GAS Error:", result.error);
+            alert(`เกิดข้อผิดพลาดจากเซิร์ฟเวอร์: ${result.error}`);
+          }
+        } else {
+          const result = await response.json();
+          alert(`เกิดข้อผิดพลาดในการเชื่อมต่อ: ${result.error || response.statusText}`);
         }
       } catch (error) {
         console.error("Error syncing draft", draft.id, error);
+        alert(`เกิดข้อผิดพลาดของระบบ: ${error}`);
       }
     }
 

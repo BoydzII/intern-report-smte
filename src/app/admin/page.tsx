@@ -47,8 +47,8 @@ export default function AdminDashboard() {
   const fetchData = async () => {
     try {
       const [reportsRes, studentsRes] = await Promise.all([
-        fetch("/api/reports"),
-        fetch("/api/students")
+        fetch("/api/reports", { cache: "no-store" }),
+        fetch("/api/students", { cache: "no-store" })
       ]);
       const reportsData = await reportsRes.json();
       const studentsData = await studentsRes.json();
@@ -140,24 +140,24 @@ export default function AdminDashboard() {
     <div className="max-w-5xl mx-auto mt-4 print:mt-0 print:p-0">
       
       {/* Print Header - Only visible when printing */}
-      <div className="hidden print:block text-center mb-6">
-        <div className="flex justify-center items-center gap-8 mb-4">
+      <div className="hidden print:block text-center mb-4">
+        <div className="flex justify-center items-center gap-6 mb-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/school-logo.jpg" alt="โรงเรียนปากช่อง" className="h-28 object-contain mix-blend-multiply" />
+          <img src="/school-logo.jpg" alt="โรงเรียนปากช่อง" className="h-16 object-contain mix-blend-multiply" />
           
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/smte-pakchong-logo.png" alt="SMTE Pakchong" className="h-24 object-contain mix-blend-multiply" />
+          <img src="/smte-pakchong-logo.png" alt="SMTE Pakchong" className="h-14 object-contain mix-blend-multiply" />
         </div>
-        <div className="text-center mt-3 mb-5 px-10">
-          <p className="text-2xl font-extrabold text-gray-900 tracking-wide leading-relaxed">
+        <div className="text-center mt-1 mb-2 px-10">
+          <p className="text-lg font-extrabold text-gray-900 tracking-wide">
             โครงการห้องเรียนพิเศษวิทยาศาสตร์ คณิตศาสตร์ เทคโนโลยี และสิ่งแวดล้อม (SMTE)
           </p>
-          <p className="text-xl font-bold text-gray-900 mt-1">ระดับมัธยมศึกษาตอนปลาย</p>
+          <p className="text-base font-bold text-gray-900">ระดับมัธยมศึกษาตอนปลาย</p>
         </div>
-        <h1 className="text-xl font-bold underline mt-4">
+        <h1 className="text-lg font-bold underline mt-2">
           สรุปรายงานการฝึกงาน {filterType === 'daily' ? `ประจำวันที่ ${new Date(filterDate).toLocaleDateString("th-TH")}` : filterType === 'weekly' ? 'รายสัปดาห์' : 'ตลอดช่วงเวลา'}
         </h1>
-        <p className="text-lg mt-2 font-medium">ภาคเรียนที่ {term} ปีการศึกษา {academicYear}</p>
+        <p className="text-sm mt-1 font-medium">ภาคเรียนที่ {term} ปีการศึกษา {academicYear}</p>
       </div>
 
       <div className="print:hidden flex justify-between items-end mb-4">
@@ -290,16 +290,36 @@ export default function AdminDashboard() {
           ) : (
             <>
               <h3 className="font-bold text-lg text-gray-800 mb-4 print:hidden">รูปถ่ายและรายงานที่ส่งแล้ว</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 print:grid-cols-2 print:gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 print:grid-cols-2 print:gap-x-4 print:gap-y-6">
                 {filteredReports.map((report) => (
-                  <div key={report.id} className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden flex flex-col print:shadow-none print:border-gray-400 print:mb-2">
+                  <div key={report.id} className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden flex flex-col print:shadow-none print:border-gray-400 print:break-inside-avoid" style={{ printColorAdjust: 'exact' }}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img 
-                      src={report.imageUrl} 
+                      src={(() => {
+                        const url = report.imageUrl || "";
+                        if (url.startsWith("data:")) return url;
+                        let id = "";
+                        if (url.includes("id=")) {
+                          id = url.split("id=")[1].split("&")[0];
+                        } else if (url.includes("/d/")) {
+                          id = url.split("/d/")[1].split("/")[0];
+                        }
+                        if (id) {
+                          return `https://drive.google.com/thumbnail?id=${id}&sz=w1000`;
+                        }
+                        return url;
+                      })()}
                       alt="Report photo" 
-                      className="w-full h-48 object-cover bg-gray-100 print:h-40"
+                      className="w-full h-48 object-cover bg-gray-100 print:h-48"
+                      onError={(e) => {
+                        // Fallback 1: Try export=view
+                        if (e.currentTarget.src.includes('thumbnail')) {
+                          const id = new URL(e.currentTarget.src).searchParams.get('id');
+                          e.currentTarget.src = `https://drive.google.com/uc?export=view&id=${id}`;
+                        }
+                      }}
                     />
-                    <div className="p-5 flex-1 print:p-3">
+                    <div className="p-5 flex-1 print:p-4">
                       <div className="flex justify-between items-start gap-2">
                         <h3 className="font-bold text-lg text-gray-800 print:text-base">{report.intern.firstName}</h3>
                         <button
@@ -328,7 +348,7 @@ export default function AdminDashboard() {
           )}
 
           {/* Print Signature Footer */}
-          <div className="hidden print:flex justify-end mt-16 pb-8">
+          <div className="hidden print:flex justify-end mt-10 pb-4 print:break-inside-avoid">
             <div className="text-center">
               <p className="mb-2">ลงชื่อ.........................................................................</p>
               <p className="mb-1">( {teacherName || "............................................................."} )</p>
