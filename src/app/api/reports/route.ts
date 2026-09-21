@@ -24,6 +24,16 @@ export async function POST(request: Request) {
   try {
     const data = await request.json();
 
+    // ป้องกัน Google Sheets แปลงระดับชั้น เช่น "4/2" เป็นวันที่ โดยแปลงให้มี "ม." นำหน้าเสมอ
+    if (data.grade) {
+      let g = String(data.grade).trim();
+      if (g === "4/1" || g === "4.1" || g === "ม.4/1") g = "ม.4/1";
+      else if (g === "4/2" || g === "4.2" || g === "ม.4/2") g = "ม.4/2";
+      else if (g === "5/1" || g === "5.1" || g === "ม.5/1") g = "ม.5/1";
+      else if (g === "5/2" || g === "5.2" || g === "ม.5/2") g = "ม.5/2";
+      data.grade = g;
+    }
+
     // If Google Apps Script is configured, send data there
     if (GAS_URL) {
       // --- DUPLICATE CHECK ---

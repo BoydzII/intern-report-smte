@@ -25,9 +25,18 @@ export default function ReportPage() {
     
     const savedName = localStorage.getItem("intern_name");
     const savedId = localStorage.getItem("intern_student_id");
-    const savedGrade = localStorage.getItem("intern_grade");
+    let savedGrade = localStorage.getItem("intern_grade");
     const savedNum = localStorage.getItem("intern_num");
     const savedDept = localStorage.getItem("intern_dept");
+
+    // แปลงรูปแบบเดิม เช่น "4/1" หรือ "4/2" ให้เป็น "ม.4/1", "ม.4/2" ป้องกัน Google Sheets แปลงเป็นวันที่
+    if (savedGrade) {
+      const g = savedGrade.trim();
+      if (g === "4/1" || g === "4.1" || g === "ม.4/1") savedGrade = "ม.4/1";
+      else if (g === "4/2" || g === "4.2" || g === "ม.4/2") savedGrade = "ม.4/2";
+      else if (g === "5/1" || g === "5.1" || g === "ม.5/1") savedGrade = "ม.5/1";
+      else if (g === "5/2" || g === "5.2" || g === "ม.5/2") savedGrade = "ม.5/2";
+    }
 
     if (savedName) setInternName(savedName);
     if (savedId) setStudentId(savedId);
@@ -161,14 +170,21 @@ export default function ReportPage() {
           
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">ระดับชั้น</label>
-            <input
-              type="text"
+            <select
               value={grade}
               onChange={(e) => setGrade(e.target.value)}
-              className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-              placeholder="เช่น ม.4/1"
+              className="w-full bg-white text-gray-900 border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all cursor-pointer"
               required
-            />
+            >
+              <option value="">-- เลือกระดับชั้น --</option>
+              <option value="ม.4/1">ม.4/1</option>
+              <option value="ม.4/2">ม.4/2</option>
+              <option value="ม.5/1">ม.5/1</option>
+              <option value="ม.5/2">ม.5/2</option>
+              {grade && !["ม.4/1", "ม.4/2", "ม.5/1", "ม.5/2"].includes(grade) && (
+                <option value={grade}>{grade}</option>
+              )}
+            </select>
           </div>
         </div>
 

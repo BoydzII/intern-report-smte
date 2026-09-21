@@ -82,13 +82,19 @@ export default function ManageStudentsPage() {
         const data = XLSX.utils.sheet_to_json(ws);
         
         // Map Excel columns to our format
-        // Expected columns: เลขประจำตัว, ชื่อ-นามสกุล, ชั้น, เลขที่
-        const newStudents = data.map((row: any) => ({
-          studentId: String(row["เลขประจำตัว"] || row["Student ID"] || row["รหัส"] || ""),
-          name: String(row["ชื่อ-นามสกุล"] || row["ชื่อ"] || row["Name"] || ""),
-          grade: String(row["ชั้น"] || row["Grade"] || ""),
-          studentNumber: String(row["เลขที่"] || row["Number"] || "")
-        })).filter(s => s.name && s.studentId);
+        const newStudents = data.map((row: any) => {
+          let g = String(row["ชั้น"] || row["Grade"] || "").trim();
+          if (g === "4/1" || g === "4.1" || g === "ม.4/1") g = "ม.4/1";
+          else if (g === "4/2" || g === "4.2" || g === "ม.4/2") g = "ม.4/2";
+          else if (g === "5/1" || g === "5.1" || g === "ม.5/1") g = "ม.5/1";
+          else if (g === "5/2" || g === "5.2" || g === "ม.5/2") g = "ม.5/2";
+          return {
+            studentId: String(row["เลขประจำตัว"] || row["Student ID"] || row["รหัส"] || "").trim(),
+            name: String(row["ชื่อ-นามสกุล"] || row["ชื่อ"] || row["Name"] || "").trim(),
+            grade: g,
+            studentNumber: String(row["เลขที่"] || row["Number"] || "").trim()
+          };
+        }).filter(s => s.name && s.studentId);
 
         if (newStudents.length === 0) {
           alert("ไม่พบข้อมูลนักเรียน หรือหัวคอลัมน์ไม่ถูกต้อง (ต้องมี 'เลขประจำตัว', 'ชื่อ-นามสกุล')");
@@ -199,7 +205,17 @@ export default function ManageStudentsPage() {
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">ชั้น</label>
-                  <input type="text" value={grade} onChange={e => setGrade(e.target.value)} className="w-full bg-white text-gray-900 border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none" />
+                  <select
+                    value={grade}
+                    onChange={e => setGrade(e.target.value)}
+                    className="w-full bg-white text-gray-900 border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer"
+                  >
+                    <option value="">-- เลือกระดับชั้น --</option>
+                    <option value="ม.4/1">ม.4/1</option>
+                    <option value="ม.4/2">ม.4/2</option>
+                    <option value="ม.5/1">ม.5/1</option>
+                    <option value="ม.5/2">ม.5/2</option>
+                  </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">เลขที่</label>
