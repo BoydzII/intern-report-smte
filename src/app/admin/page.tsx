@@ -26,6 +26,8 @@ type Student = {
   grade: string;
   studentNumber: string;
   isInterning?: boolean;
+  startDate?: string;
+  endDate?: string;
 };
 
 export default function AdminDashboard() {
