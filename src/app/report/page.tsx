@@ -16,6 +16,7 @@ export default function ReportPage() {
   
   const [date, setDate] = useState("");
   const [photo, setPhoto] = useState<string | null>(null);
+  const [studentsDb, setStudentsDb] = useState<any[]>([]);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -43,7 +44,32 @@ export default function ReportPage() {
     if (savedGrade) setGrade(savedGrade);
     if (savedNum) setStudentNumber(savedNum);
     if (savedDept) setDepartment(savedDept);
+
+    fetch("/api/students").then(res => res.json()).then(data => {
+      if (data.success && data.students) {
+        setStudentsDb(data.students);
+        if (savedId) {
+          const found = data.students.find((s: any) => String(s.studentId) === String(savedId));
+          if (found) {
+            setInternName(found.name);
+            setGrade(found.grade);
+            setStudentNumber(found.studentNumber);
+          }
+        }
+      }
+    }).catch(console.error);
   }, []);
+
+  const handleStudentIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setStudentId(val);
+    const found = studentsDb.find(s => String(s.studentId) === String(val));
+    if (found) {
+      setInternName(found.name);
+      setGrade(found.grade);
+      setStudentNumber(found.studentNumber);
+    }
+  };
 
   const handlePhotoCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -149,7 +175,7 @@ export default function ReportPage() {
               <input
                 type="text"
                 value={studentId}
-                onChange={(e) => setStudentId(e.target.value)}
+                onChange={handleStudentIdChange}
                 className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                 placeholder="เช่น 12345"
                 required
