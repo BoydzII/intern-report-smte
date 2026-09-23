@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
-import { ArrowLeft, UserPlus, Trash2, FileUp, Download } from "lucide-react";
+import { ArrowLeft, UserPlus, Trash2, FileUp, Download, RefreshCw } from "lucide-react";
 import * as XLSX from "xlsx";
 
 type Student = {
@@ -293,17 +293,31 @@ export default function ManageStudentsPage() {
         <div className="md:col-span-2 bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
           <div className="flex justify-between items-center mb-4 pb-2 border-b border-gray-100">
             <h2 className="text-lg font-bold text-gray-800">รายชื่อทั้งหมด ({students.length} คน)</h2>
-            {students.length > 0 && (
+            <div className="flex gap-2">
               <button
                 type="button"
-                onClick={handleDeleteAll}
-                className="text-xs text-red-600 hover:text-white hover:bg-red-600 px-3 py-1.5 rounded-lg border border-red-200 hover:border-red-600 transition flex items-center gap-1.5 font-medium shadow-xs"
-                title="ลบรายชื่อนักเรียนทั้งหมดในระบบ"
+                onClick={() => {
+                  setLoading(true);
+                  fetchStudents();
+                }}
+                className="text-xs text-blue-600 hover:text-white hover:bg-blue-600 px-3 py-1.5 rounded-lg border border-blue-200 hover:border-blue-600 transition flex items-center gap-1.5 font-medium shadow-xs"
+                title="ดึงข้อมูลรายชื่อล่าสุดจากฐานข้อมูล"
               >
-                <Trash2 size={14} />
-                <span>ลบรายชื่อทั้งหมด</span>
+                <RefreshCw size={14} />
+                <span>ดึงข้อมูลล่าสุด</span>
               </button>
-            )}
+              {students.length > 0 && (
+                <button
+                  type="button"
+                  onClick={handleDeleteAll}
+                  className="text-xs text-red-600 hover:text-white hover:bg-red-600 px-3 py-1.5 rounded-lg border border-red-200 hover:border-red-600 transition flex items-center gap-1.5 font-medium shadow-xs"
+                  title="ลบรายชื่อนักเรียนทั้งหมดในระบบ"
+                >
+                  <Trash2 size={14} />
+                  <span>ลบรายชื่อทั้งหมด</span>
+                </button>
+              )}
+            </div>
           </div>
           
           {loading ? (
