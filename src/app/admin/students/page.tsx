@@ -342,16 +342,14 @@ export default function ManageStudentsPage() {
           <div className="flex justify-between items-center mb-4 pb-2 border-b border-gray-100">
             <h2 className="text-lg font-bold text-gray-800">รายชื่อทั้งหมด ({students.length} คน)</h2>
             <div className="flex gap-2">
-              {selectedIds.length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => setShowPeriodModal(true)}
-                  className="text-xs text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-lg border border-indigo-700 transition flex items-center gap-1.5 font-medium shadow-xs"
-                >
-                  <Users size={14} />
-                  <span>ตั้งเวลาฝึกงาน ({selectedIds.length})</span>
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={() => selectedIds.length > 0 ? setShowPeriodModal(true) : alert('กรุณาติ๊กเลือกนักเรียนในตารางก่อนครับ')}
+                className={`text-xs px-3 py-1.5 rounded-lg border transition flex items-center gap-1.5 font-medium shadow-xs ${selectedIds.length > 0 ? 'text-white bg-indigo-600 hover:bg-indigo-700 border-indigo-700' : 'text-gray-400 bg-gray-100 border-gray-200 cursor-not-allowed'}`}
+              >
+                <Users size={14} />
+                <span>ตั้งเวลาฝึกงาน {selectedIds.length > 0 ? `(${selectedIds.length})` : ''}</span>
+              </button>
               <button
                 type="button"
                 onClick={() => {
