@@ -172,14 +172,32 @@ export default function ReportPage() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">เลขประจำตัวนักเรียน</label>
-              <input
-                type="text"
-                value={studentId}
-                onChange={handleStudentIdChange}
-                className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                placeholder="เช่น 12345"
-                required
-              />
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={studentId}
+                  onChange={handleStudentIdChange}
+                  className="flex-1 w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                  placeholder="เช่น 12345"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const found = studentsDb.find(s => String(s.studentId) === String(studentId));
+                    if (found) {
+                      setInternName(found.name);
+                      setGrade(found.grade);
+                      setStudentNumber(found.studentNumber);
+                    } else {
+                      alert("ไม่พบข้อมูลรหัสนักเรียน: " + studentId);
+                    }
+                  }}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap shadow-sm"
+                >
+                  ดึงข้อมูล
+                </button>
+              </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">เลขที่</label>
