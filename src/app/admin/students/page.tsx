@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
-import { ArrowLeft, UserPlus, Trash2, FileUp, Download, RefreshCw } from "lucide-react";
+import { ArrowLeft, UserPlus, Trash2, Users, FileUp, Download, RefreshCw } from "lucide-react";
 import * as XLSX from "xlsx";
 
 type Student = {
@@ -342,6 +342,16 @@ export default function ManageStudentsPage() {
           <div className="flex justify-between items-center mb-4 pb-2 border-b border-gray-100">
             <h2 className="text-lg font-bold text-gray-800">รายชื่อทั้งหมด ({students.length} คน)</h2>
             <div className="flex gap-2">
+              {selectedIds.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setShowPeriodModal(true)}
+                  className="text-xs text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-lg border border-indigo-700 transition flex items-center gap-1.5 font-medium shadow-xs"
+                >
+                  <Users size={14} />
+                  <span>ตั้งเวลาฝึกงาน ({selectedIds.length})</span>
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => {
@@ -426,6 +436,31 @@ export default function ManageStudentsPage() {
           )}
         </div>
       </div>
+
+      {showPeriodModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
+            <div className="p-4 border-b border-gray-100 bg-gray-50">
+              <h3 className="font-bold text-lg text-gray-800">กำหนดช่วงเวลาฝึกงาน</h3>
+              <p className="text-sm text-gray-500">สำหรับนักเรียน {selectedIds.length} คนที่เลือก</p>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">วันที่เริ่มฝึกงาน</label>
+                <input type="date" value={periodStart} onChange={e => setPeriodStart(e.target.value)} className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500 outline-none" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">วันที่สิ้นสุด</label>
+                <input type="date" value={periodEnd} onChange={e => setPeriodEnd(e.target.value)} className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500 outline-none" />
+              </div>
+            </div>
+            <div className="p-4 border-t border-gray-100 flex justify-end gap-2 bg-gray-50">
+              <button onClick={() => setShowPeriodModal(false)} className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 font-medium">ยกเลิก</button>
+              <button onClick={handleSetPeriod} className="px-4 py-2 text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 font-medium">บันทึกข้อมูล</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
