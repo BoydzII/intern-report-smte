@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState, useMemo } from "react";
 import { Download, Printer, Users, Trash2, RefreshCw } from "lucide-react";
@@ -26,8 +26,6 @@ type Student = {
   grade: string;
   studentNumber: string;
   isInterning?: boolean;
-  startDate?: string;
-  endDate?: string;
 };
 
 export default function AdminDashboard() {
@@ -107,7 +105,20 @@ export default function AdminDashboard() {
     if (filterType !== "daily" || students.length === 0) return [];
     
     const submittedIds = filteredReports.map(r => r.intern.studentId);
-    let eligibleStudents = students.filter(s => { if (s.isInterning === false) return false; if (s.startDate && s.endDate) { const start = new Date(s.startDate); start.setHours(0,0,0,0); const end = new Date(s.endDate); end.setHours(23,59,59,999); const current = new Date(filterDate); if (current < start || current > end) return false; } return true; });
+    let eligibleStudents = students.filter(s => {
+      if (s.isInterning === false) return false;
+      
+      // Check if filterDate is within internship period
+      if (s.startDate && s.endDate) {
+        const start = new Date(s.startDate);
+        start.setHours(0,0,0,0);
+        const end = new Date(s.endDate);
+        end.setHours(23,59,59,999);
+        const current = new Date(filterDate);
+        if (current < start || current > end) return false;
+      }
+      return true;
+    });
 
     if (studentFilterType === "grade" && studentFilterGrade) {
       eligibleStudents = eligibleStudents.filter(s => s.grade === studentFilterGrade);
@@ -119,17 +130,17 @@ export default function AdminDashboard() {
   }, [filteredReports, students, filterType, filterDate, studentFilterType, studentFilterGrade, studentFilterStudentId]);
 
   const handleDeleteReport = async (id: string, name: string) => {
-    if (!confirm(`เธเธธเธ“เธ•เนเธญเธเธเธฒเธฃเธฅเธเธเนเธญเธกเธนเธฅเธฃเธฒเธขเธเธฒเธเธเธญเธ "${name}" เนเธเนเธซเธฃเธทเธญเนเธกเน?`)) return;
+    if (!confirm(`คุณต้องการลบข้อมูลรายงานของ "${name}" ใช่หรือไม่?`)) return;
     try {
       const res = await fetch(`/api/reports?id=${id}`, { method: "DELETE" });
       const data = await res.json();
       if (data.success) {
         setReports(prev => prev.filter(r => r.id !== id));
       } else {
-        alert("เธฅเธเนเธกเนเธชเธณเน€เธฃเนเธ: " + (data.error || "เน€เธเธดเธ”เธเนเธญเธเธดเธ”เธเธฅเธฒเธ”"));
+        alert("ลบไม่สำเร็จ: " + (data.error || "เกิดข้อผิดพลาด"));
       }
     } catch (err) {
-      alert("เน€เธเธดเธ”เธเนเธญเธเธดเธ”เธเธฅเธฒเธ”เนเธเธเธฒเธฃเธฅเธเธเนเธญเธกเธนเธฅ");
+      alert("เกิดข้อผิดพลาดในการลบข้อมูล");
     }
   };
 
@@ -137,7 +148,7 @@ export default function AdminDashboard() {
     if (filteredReports.length === 0) return;
     
     let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
-    csvContent += "เธงเธฑเธเธ—เธตเนเธเธถเธเธเธฒเธ,เน€เธฅเธเธเธฃเธฐเธเธณเธ•เธฑเธง,เธเธทเนเธญ-เธเธฒเธกเธชเธเธธเธฅ,เธเธฑเนเธ,เน€เธฅเธเธ—เธตเน,เธชเธ–เธฒเธเธ—เธตเนเธเธถเธเธเธฒเธ,เธงเธฑเธเธ—เธตเนเธชเนเธเธฃเธฒเธขเธเธฒเธ\n";
+    csvContent += "วันที่ฝึกงาน,เลขประจำตัว,ชื่อ-นามสกุล,ชั้น,เลขที่,สถานที่ฝึกงาน,วันที่ส่งรายงาน\n";
 
     filteredReports.forEach((row) => {
       const date = new Date(row.date).toLocaleDateString("th-TH");
@@ -168,48 +179,48 @@ export default function AdminDashboard() {
       <div className="hidden print:block text-center mb-4">
         <div className="flex justify-center items-center gap-6 mb-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/school-logo.jpg" alt="เนเธฃเธเน€เธฃเธตเธขเธเธเธฒเธเธเนเธญเธ" className="h-16 object-contain mix-blend-multiply" />
+          <img src="/school-logo.jpg" alt="โรงเรียนปากช่อง" className="h-16 object-contain mix-blend-multiply" />
           
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/smte-pakchong-logo.png" alt="SMTE Pakchong" className="h-14 object-contain mix-blend-multiply" />
         </div>
         <div className="text-center mt-1 mb-2 px-10">
           <p className="text-lg font-extrabold text-gray-900 tracking-wide">
-            เนเธเธฃเธเธเธฒเธฃเธซเนเธญเธเน€เธฃเธตเธขเธเธเธดเน€เธจเธฉเธงเธดเธ—เธขเธฒเธจเธฒเธชเธ•เธฃเน เธเธ“เธดเธ•เธจเธฒเธชเธ•เธฃเน เน€เธ—เธเนเธเนเธฅเธขเธต เนเธฅเธฐเธชเธดเนเธเนเธงเธ”เธฅเนเธญเธก (SMTE)
+            โครงการห้องเรียนพิเศษวิทยาศาสตร์ คณิตศาสตร์ เทคโนโลยี และสิ่งแวดล้อม (SMTE)
           </p>
-          <p className="text-base font-bold text-gray-900">เธฃเธฐเธ”เธฑเธเธกเธฑเธเธขเธกเธจเธถเธเธฉเธฒเธ•เธญเธเธเธฅเธฒเธข</p>
+          <p className="text-base font-bold text-gray-900">ระดับมัธยมศึกษาตอนปลาย</p>
         </div>
         <h1 className="text-lg font-bold underline mt-2">
-          เธชเธฃเธธเธเธฃเธฒเธขเธเธฒเธเธเธฒเธฃเธเธถเธเธเธฒเธ {filterType === 'daily' ? `เธเธฃเธฐเธเธณเธงเธฑเธเธ—เธตเน ${new Date(filterDate).toLocaleDateString("th-TH")}` : filterType === 'weekly' ? 'เธฃเธฒเธขเธชเธฑเธเธ”เธฒเธซเน' : 'เธ•เธฅเธญเธ”เธเนเธงเธเน€เธงเธฅเธฒ'}
+          สรุปรายงานการฝึกงาน {filterType === 'daily' ? `ประจำวันที่ ${new Date(filterDate).toLocaleDateString("th-TH")}` : filterType === 'weekly' ? 'รายสัปดาห์' : 'ตลอดช่วงเวลา'}
         </h1>
-        <p className="text-sm mt-1 font-medium">เธ เธฒเธเน€เธฃเธตเธขเธเธ—เธตเน {term} เธเธตเธเธฒเธฃเธจเธถเธเธฉเธฒ {academicYear}</p>
+        <p className="text-sm mt-1 font-medium">ภาคเรียนที่ {term} ปีการศึกษา {academicYear}</p>
       </div>
 
       <div className="print:hidden flex justify-between items-end mb-4">
-        <h2 className="text-2xl font-bold text-gray-800">เธชเธฃเธธเธเธฃเธฒเธขเธเธฒเธเธเธถเธเธเธฒเธ</h2>
+        <h2 className="text-2xl font-bold text-gray-800">สรุปรายงานฝึกงาน</h2>
         <Link href="/admin/students" className="flex items-center gap-2 bg-white border border-blue-200 text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-50 font-medium transition shadow-sm">
           <Users size={18} />
-          เธเธฑเธ”เธเธฒเธฃเธเธฒเธเธเนเธญเธกเธนเธฅเธเธฑเธเน€เธฃเธตเธขเธ ({students.length})
+          จัดการฐานข้อมูลนักเรียน ({students.length})
         </Link>
       </div>
 
       <div className="print:hidden bg-white p-4 rounded-xl shadow-sm mb-6 flex flex-wrap items-end gap-4 border border-gray-100">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">เธฃเธนเธเนเธเธเธฃเธฒเธขเธเธฒเธ</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">รูปแบบรายงาน</label>
           <select 
             value={filterType} 
             onChange={e => setFilterType(e.target.value as any)}
             className="border border-gray-300 bg-white text-gray-900 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none w-full"
           >
-            <option value="all">เธ•เธฅเธญเธ”เธเนเธงเธเน€เธงเธฅเธฒเธเธถเธ (เธ—เธฑเนเธเธซเธกเธ”)</option>
-            <option value="daily">เธฃเธฒเธขเธงเธฑเธ</option>
-            <option value="weekly">เธฃเธฒเธขเธชเธฑเธเธ”เธฒเธซเน</option>
+            <option value="all">ตลอดช่วงเวลาฝึก (ทั้งหมด)</option>
+            <option value="daily">รายวัน</option>
+            <option value="weekly">รายสัปดาห์</option>
           </select>
         </div>
 
         {filterType !== "all" && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">เน€เธฅเธทเธญเธเธงเธฑเธเธ—เธตเน</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">เลือกวันที่</label>
             <input 
               type="date" 
               value={filterDate}
@@ -222,7 +233,7 @@ export default function AdminDashboard() {
         <div className="border-l border-gray-200 h-10 mx-2 hidden md:block print:hidden"></div>
 
         <div className="print:hidden">
-          <label className="block text-sm font-medium text-gray-700 mb-1">เธเธฒเธฃเธเธฃเธญเธเธฃเธฒเธขเธเธทเนเธญ</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">การกรองรายชื่อ</label>
           <select 
             value={studentFilterType} 
             onChange={e => {
@@ -232,21 +243,21 @@ export default function AdminDashboard() {
             }}
             className="border border-gray-300 bg-white text-gray-900 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none w-full min-w-[140px]"
           >
-            <option value="all">เธเธฑเธเน€เธฃเธตเธขเธเธ—เธฑเนเธเธซเธกเธ”</option>
-            <option value="grade">เน€เธเธเธฒเธฐเธเธฑเนเธเน€เธฃเธตเธขเธ</option>
-            <option value="individual">เธฃเธฒเธขเธเธธเธเธเธฅ</option>
+            <option value="all">นักเรียนทั้งหมด</option>
+            <option value="grade">เฉพาะชั้นเรียน</option>
+            <option value="individual">รายบุคคล</option>
           </select>
         </div>
 
         {studentFilterType === "grade" && (
           <div className="print:hidden">
-            <label className="block text-sm font-medium text-gray-700 mb-1">เน€เธฅเธทเธญเธเธฃเธฐเธ”เธฑเธเธเธฑเนเธ</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">เลือกระดับชั้น</label>
             <select
               value={studentFilterGrade}
               onChange={e => setStudentFilterGrade(e.target.value)}
               className="border border-gray-300 bg-white text-gray-900 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none w-full min-w-[120px]"
             >
-              <option value="">-- เน€เธฅเธทเธญเธเธเธฑเนเธ --</option>
+              <option value="">-- เลือกชั้น --</option>
               {Array.from(new Set(students.map(s => s.grade))).filter(Boolean).sort().map(grade => (
                 <option key={grade} value={grade}>{grade}</option>
               ))}
@@ -256,13 +267,13 @@ export default function AdminDashboard() {
 
         {studentFilterType === "individual" && (
           <div className="print:hidden">
-            <label className="block text-sm font-medium text-gray-700 mb-1">เน€เธฅเธทเธญเธเธเธฑเธเน€เธฃเธตเธขเธ</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">เลือกนักเรียน</label>
             <select
               value={studentFilterStudentId}
               onChange={e => setStudentFilterStudentId(e.target.value)}
               className="border border-gray-300 bg-white text-gray-900 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none w-full max-w-[200px]"
             >
-              <option value="">-- เน€เธฅเธทเธญเธเธเธฑเธเน€เธฃเธตเธขเธ --</option>
+              <option value="">-- เลือกนักเรียน --</option>
               {students.filter(s => s.isInterning !== false).sort((a,b) => a.studentId.localeCompare(b.studentId)).map(s => (
                 <option key={s.studentId} value={s.studentId}>{s.studentId} - {s.name}</option>
               ))}
@@ -273,7 +284,7 @@ export default function AdminDashboard() {
         <div className="w-full border-b my-2 md:hidden print:hidden"></div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">เธ เธฒเธเน€เธฃเธตเธขเธเธ—เธตเน</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">ภาคเรียนที่</label>
           <input 
             type="text" 
             value={term}
@@ -283,7 +294,7 @@ export default function AdminDashboard() {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">เธเธตเธเธฒเธฃเธจเธถเธเธฉเธฒ</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">ปีการศึกษา</label>
           <input 
             type="text" 
             value={academicYear}
@@ -293,13 +304,13 @@ export default function AdminDashboard() {
           />
         </div>
         <div className="flex-1 min-w-[200px]">
-          <label className="block text-sm font-medium text-gray-700 mb-1">เธฅเธเธเธทเนเธญเธเธฃเธนเธเธนเนเธ”เธนเนเธฅ (เธเธดเธกเธเนเธชเธณเธซเธฃเธฑเธเนเธเธฃเธฒเธขเธเธฒเธ)</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">ลงชื่อครูผู้ดูแล (พิมพ์สำหรับใบรายงาน)</label>
           <input 
             type="text" 
             value={teacherName}
             onChange={e => setTeacherName(e.target.value)}
             className="border border-gray-300 bg-white text-gray-900 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none w-full"
-            placeholder="เน€เธเนเธ เธเธฒเธขเธเธธเธ“เธเธฃเธน เนเธเธ”เธต"
+            placeholder="เช่น นายคุณครู ใจดี"
           />
         </div>
 
@@ -316,43 +327,43 @@ export default function AdminDashboard() {
             className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center gap-2 shadow-sm font-medium print:hidden"
           >
             <RefreshCw size={20} />
-            <span>เธ”เธถเธเธเนเธญเธกเธนเธฅเธฅเนเธฒเธชเธธเธ”</span>
+            <span>ดึงข้อมูลล่าสุด</span>
           </button>
           <button
             onClick={() => window.print()}
             className="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-900 transition flex items-center gap-2 shadow-sm font-medium"
           >
             <Printer size={20} />
-            <span>เธเธดเธกเธเนเธฃเธฒเธขเธเธฒเธ</span>
+            <span>พิมพ์รายงาน</span>
           </button>
         </div>
       </div>
 
       {loading ? (
-        <div className="text-center p-12 text-gray-500 print:hidden">เธเธณเธฅเธฑเธเนเธซเธฅเธ”เธเนเธญเธกเธนเธฅ...</div>
+        <div className="text-center p-12 text-gray-500 print:hidden">กำลังโหลดข้อมูล...</div>
       ) : (
         <>
           {filterType === "daily" && students.length > 0 && (
             <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm mb-6 print:mb-8">
-              <h3 className="font-bold text-lg text-gray-800 mb-3 border-b pb-2">เธชเธฃเธธเธเธเธฒเธฃเน€เธเนเธฒเธเธถเธเธเธฒเธ</h3>
+              <h3 className="font-bold text-lg text-gray-800 mb-3 border-b pb-2">สรุปการเข้าฝึกงาน</h3>
               <div className="flex flex-wrap gap-6 mb-4">
                 <div className="bg-blue-50 px-4 py-3 rounded-lg border border-blue-100 flex-1 min-w-[150px]">
-                  <p className="text-sm text-blue-700 font-semibold mb-1">เธเธฑเธเน€เธฃเธตเธขเธเธ—เธฑเนเธเธซเธกเธ”</p>
-                  <p className="text-2xl font-extrabold text-blue-900">{students.length} <span className="text-lg font-medium">เธเธ</span></p>
+                  <p className="text-sm text-blue-700 font-semibold mb-1">นักเรียนทั้งหมด</p>
+                  <p className="text-2xl font-extrabold text-blue-900">{students.length} <span className="text-lg font-medium">คน</span></p>
                 </div>
                 <div className="bg-green-50 px-4 py-3 rounded-lg border border-green-100 flex-1 min-w-[150px]">
-                  <p className="text-sm text-green-700 font-semibold mb-1">เธชเนเธเธฃเธฒเธขเธเธฒเธเนเธฅเนเธง</p>
-                  <p className="text-2xl font-extrabold text-green-900">{filteredReports.length} <span className="text-lg font-medium">เธเธ</span></p>
+                  <p className="text-sm text-green-700 font-semibold mb-1">ส่งรายงานแล้ว</p>
+                  <p className="text-2xl font-extrabold text-green-900">{filteredReports.length} <span className="text-lg font-medium">คน</span></p>
                 </div>
                 <div className="bg-red-50 px-4 py-3 rounded-lg border border-red-100 flex-1 min-w-[150px]">
-                  <p className="text-sm text-red-700 font-semibold mb-1">เธขเธฑเธเนเธกเนเธชเนเธเธฃเธฒเธขเธเธฒเธ / เธเธฒเธ”</p>
-                  <p className="text-2xl font-extrabold text-red-900">{missingStudents.length} <span className="text-lg font-medium">เธเธ</span></p>
+                  <p className="text-sm text-red-700 font-semibold mb-1">ยังไม่ส่งรายงาน / ขาด</p>
+                  <p className="text-2xl font-extrabold text-red-900">{missingStudents.length} <span className="text-lg font-medium">คน</span></p>
                 </div>
               </div>
 
               {missingStudents.length > 0 && (
                 <div className="mt-4">
-                  <p className="font-semibold text-red-700 mb-2">เธฃเธฒเธขเธเธทเนเธญเธเธฑเธเน€เธฃเธตเธขเธเธ—เธตเนเธเธฒเธ” / เธขเธฑเธเนเธกเนเธฃเธฒเธขเธเธฒเธ:</p>
+                  <p className="font-semibold text-red-700 mb-2">รายชื่อนักเรียนที่ขาด / ยังไม่รายงาน:</p>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
                     {missingStudents.map(ms => (
                       <div key={ms.id} className="text-sm bg-red-50/50 border border-red-100 px-3 py-2 rounded-md text-red-900 flex justify-between">
@@ -368,11 +379,11 @@ export default function AdminDashboard() {
 
           {filteredReports.length === 0 ? (
             <div className="text-center p-12 bg-white rounded-xl border border-dashed text-gray-500 print:hidden shadow-sm">
-              เนเธกเนเธกเธตเธเนเธญเธกเธนเธฅเธฃเธฒเธขเธเธฒเธเนเธเธเนเธงเธเน€เธงเธฅเธฒเธเธตเน
+              ไม่มีข้อมูลรายงานในช่วงเวลานี้
             </div>
           ) : (
             <>
-              <h3 className="font-bold text-lg text-gray-800 mb-4 print:hidden">เธฃเธนเธเธ–เนเธฒเธขเนเธฅเธฐเธฃเธฒเธขเธเธฒเธเธ—เธตเนเธชเนเธเนเธฅเนเธง</h3>
+              <h3 className="font-bold text-lg text-gray-800 mb-4 print:hidden">รูปถ่ายและรายงานที่ส่งแล้ว</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 print:grid-cols-2 print:gap-x-4 print:gap-y-6">
                 {filteredReports.map((report) => (
                   <div key={report.id} className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden flex flex-col print:shadow-none print:border-gray-400 print:break-inside-avoid" style={{ printColorAdjust: 'exact' }}>
@@ -408,20 +419,20 @@ export default function AdminDashboard() {
                         <button
                           onClick={() => handleDeleteReport(report.id, report.intern.firstName)}
                           className="print:hidden text-red-600 hover:text-red-800 hover:bg-red-50 px-2 py-1 rounded-lg transition flex items-center gap-1 text-xs border border-red-200 shadow-sm"
-                          title="เธฅเธเธฃเธฒเธขเธเธฒเธเธเธตเน"
+                          title="ลบรายงานนี้"
                         >
                           <Trash2 size={14} />
-                          <span>เธฅเธเธเนเธญเธกเธนเธฅ</span>
+                          <span>ลบข้อมูล</span>
                         </button>
                       </div>
                       <div className="flex flex-wrap gap-x-3 gap-y-1 text-sm text-gray-600 mb-2 mt-1 print:text-xs">
-                        <span>เน€เธฅเธเธเธฃเธฐเธเธณเธ•เธฑเธงเธเธฑเธเน€เธฃเธตเธขเธ: <span className="font-medium">{report.intern.studentId || '-'}</span></span>
-                        <span>เธเธฑเนเธ: <span className="font-medium">{report.intern.grade || '-'}</span></span>
-                        <span>เน€เธฅเธเธ—เธตเน: <span className="font-medium">{report.intern.studentNumber || '-'}</span></span>
+                        <span>เลขประจำตัวนักเรียน: <span className="font-medium">{report.intern.studentId || '-'}</span></span>
+                        <span>ชั้น: <span className="font-medium">{report.intern.grade || '-'}</span></span>
+                        <span>เลขที่: <span className="font-medium">{report.intern.studentNumber || '-'}</span></span>
                       </div>
-                      <p className="text-gray-700 text-sm mb-4 print:text-xs print:mb-2">เธชเธ–เธฒเธเธ—เธตเนเธเธถเธ: <span className="font-semibold">{report.intern.department}</span></p>
+                      <p className="text-gray-700 text-sm mb-4 print:text-xs print:mb-2">สถานที่ฝึก: <span className="font-semibold">{report.intern.department}</span></p>
                       <div className="bg-blue-50 text-blue-800 text-xs px-3 py-1.5 rounded-full inline-block font-medium print:bg-transparent print:border print:border-gray-300 print:rounded-none">
-                        เธเธถเธเธเธฒเธเธงเธฑเธเธ—เธตเน: {new Date(report.date).toLocaleDateString("th-TH")}
+                        ฝึกงานวันที่: {new Date(report.date).toLocaleDateString("th-TH")}
                       </div>
                     </div>
                   </div>
@@ -433,9 +444,9 @@ export default function AdminDashboard() {
           {/* Print Signature Footer */}
           <div className="hidden print:flex justify-end mt-10 pb-4 print:break-inside-avoid">
             <div className="text-center">
-              <p className="mb-2">เธฅเธเธเธทเนเธญ.........................................................................</p>
+              <p className="mb-2">ลงชื่อ.........................................................................</p>
               <p className="mb-1">( {teacherName || "............................................................."} )</p>
-              <p>เธเธฃเธนเธเธนเนเธ”เธนเนเธฅเธเธฒเธฃเธเธถเธเธเธฒเธ</p>
+              <p>ครูผู้ดูแลการฝึกงาน</p>
             </div>
           </div>
         </>
