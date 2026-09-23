@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { Download, Printer, Users, Trash2 } from "lucide-react";
+import { Download, Printer, Users, Trash2, RefreshCw } from "lucide-react";
 import { startOfWeek, endOfWeek, isWithinInterval } from "date-fns";
 import Link from "next/link";
 
@@ -308,6 +308,13 @@ export default function AdminDashboard() {
           >
             <Download size={20} />
             <span>Export CSV</span>
+          </button>
+          <button
+            onClick={() => { setLoading(true); fetchData(); }}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center gap-2 shadow-sm font-medium print:hidden"
+          >
+            <RefreshCw size={20} />
+            <span>ดึงข้อมูลล่าสุด</span>
           </button>
           <button
             onClick={() => window.print()}
