@@ -12,10 +12,16 @@ type Student = {
   grade: string;
   studentNumber: string;
   isInterning?: boolean;
+  startDate?: string;
+  endDate?: string;
 };
 
 export default function ManageStudentsPage() {
   const [students, setStudents] = useState<Student[]>([]);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [showPeriodModal, setShowPeriodModal] = useState(false);
+  const [periodStart, setPeriodStart] = useState("");
+  const [periodEnd, setPeriodEnd] = useState("");
   const [loading, setLoading] = useState(true);
   
   const [name, setName] = useState("");
@@ -39,6 +45,45 @@ export default function ManageStudentsPage() {
     } catch (error: any) {
       console.error(error);
       alert("ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้: " + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleToggleSelect = (id: string) => {
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  };
+  
+  const handleToggleSelectAll = () => {
+    if (selectedIds.length === students.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(students.map(s => s.id));
+    }
+  };
+  
+  const handleSetPeriod = async () => {
+    if (selectedIds.length === 0) return alert("กรุณาเลือกนักเรียนอย่างน้อย 1 คน");
+    if (!periodStart || !periodEnd) return alert("กรุณาระบุวันที่เริ่มและสิ้นสุด");
+    
+    try {
+      setLoading(true);
+      const res = await fetch("/api/students", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "update_period", ids: selectedIds, startDate: periodStart, endDate: periodEnd })
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert("ตั้งช่วงเวลาฝึกงานเรียบร้อยแล้ว");
+        setShowPeriodModal(false);
+        setSelectedIds([]);
+        fetchStudents();
+      } else {
+        alert("เกิดข้อผิดพลาด: " + (data.error || "Unknown"));
+      }
+    } catch (e: any) {
+      alert("Error: " + e.message);
     } finally {
       setLoading(false);
     }
@@ -332,10 +377,13 @@ export default function ManageStudentsPage() {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-gray-100 text-gray-700 text-sm">
-                    <th className="p-3 rounded-tl-lg">เลขประจำตัว</th>
+                    <th className="p-3 rounded-tl-lg w-10">
+                      <input type="checkbox" checked={students.length > 0 && selectedIds.length === students.length} onChange={handleToggleSelectAll} className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                    </th>
+                    <th className="p-3">เลขประจำตัว</th>
                     <th className="p-3">ชื่อ-นามสกุล</th>
-                    <th className="p-3">ชั้น</th>
-                    <th className="p-3">เลขที่</th>
+                    <th className="p-3">ชั้น/เลขที่</th>
+                    <th className="p-3">ช่วงเวลาฝึกงาน</th>
                     <th className="p-3">สถานะ</th>
                     <th className="p-3 rounded-tr-lg"></th>
                   </tr>
@@ -343,10 +391,20 @@ export default function ManageStudentsPage() {
                 <tbody>
                   {students.map(s => (
                     <tr key={s.id} className="border-b last:border-0 hover:bg-gray-50">
+                      <td className="p-3">
+                        <input type="checkbox" checked={selectedIds.includes(s.id)} onChange={() => handleToggleSelect(s.id)} className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                      </td>
                       <td className="p-3 font-medium text-blue-700">{s.studentId}</td>
                       <td className="p-3 text-gray-800">{s.name}</td>
-                      <td className="p-3 text-gray-600">{s.grade}</td>
-                      <td className="p-3 text-gray-600">{s.studentNumber}</td>
+                      <td className="p-3 text-gray-600">{s.grade} / {s.studentNumber}</td>
+                      <td className="p-3 text-xs text-gray-600">
+                        {s.startDate && s.endDate ? (
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-green-700 font-medium">เริ่ม: {new Date(s.startDate).toLocaleDateString('th-TH')}</span>
+                            <span className="text-orange-700 font-medium">สิ้นสุด: {new Date(s.endDate).toLocaleDateString('th-TH')}</span>
+                          </div>
+                        ) : <span className="text-gray-400">ยังไม่กำหนด</span>}
+                      </td>
                       <td className="p-3">
                         <button 
                           onClick={() => handleToggleStatus(s.id, s.isInterning !== false)}
