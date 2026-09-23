@@ -25,6 +25,7 @@ type Student = {
   studentId: string;
   grade: string;
   studentNumber: string;
+  isInterning?: boolean;
 };
 
 export default function AdminDashboard() {
@@ -34,6 +35,9 @@ export default function AdminDashboard() {
   
   const [filterType, setFilterType] = useState<"all" | "daily" | "weekly">("all");
   const [filterDate, setFilterDate] = useState(new Date().toISOString().split("T")[0]);
+  const [studentFilterType, setStudentFilterType] = useState<"all" | "grade" | "individual">("all");
+  const [studentFilterGrade, setStudentFilterGrade] = useState<string>("");
+  const [studentFilterStudentId, setStudentFilterStudentId] = useState<string>("");
 
   // Document metadata state
   const [term, setTerm] = useState("1");
@@ -63,39 +67,54 @@ export default function AdminDashboard() {
   };
 
   const filteredReports = useMemo(() => {
-    if (filterType === "all") return reports;
+    let result = reports;
     
-    return reports.filter(report => {
-      const reportDate = new Date(report.date);
-      const selectedDate = new Date(filterDate);
-      
-      if (filterType === "daily") {
-        const d1 = reportDate;
-        const d2 = selectedDate;
-        return d1.getFullYear() === d2.getFullYear() && 
-               d1.getMonth() === d2.getMonth() && 
-               d1.getDate() === d2.getDate();
-      }
-      
-      if (filterType === "weekly") {
-        const start = startOfWeek(selectedDate, { weekStartsOn: 1 }); // Monday start
-        const end = endOfWeek(selectedDate, { weekStartsOn: 1 });
-        return isWithinInterval(reportDate, { start, end });
-      }
-      return true;
-    });
-  }, [reports, filterType, filterDate]);
+    if (filterType !== "all") {
+      result = result.filter(report => {
+        const reportDate = new Date(report.date);
+        const selectedDate = new Date(filterDate);
+        
+        if (filterType === "daily") {
+          const d1 = reportDate;
+          const d2 = selectedDate;
+          return d1.getFullYear() === d2.getFullYear() && 
+                 d1.getMonth() === d2.getMonth() && 
+                 d1.getDate() === d2.getDate();
+        }
+        
+        if (filterType === "weekly") {
+          const start = startOfWeek(selectedDate, { weekStartsOn: 1 }); // Monday start
+          const end = endOfWeek(selectedDate, { weekStartsOn: 1 });
+          return isWithinInterval(reportDate, { start, end });
+        }
+        return true;
+      });
+    }
+
+    if (studentFilterType === "grade" && studentFilterGrade) {
+      result = result.filter(report => report.intern.grade === studentFilterGrade);
+    } else if (studentFilterType === "individual" && studentFilterStudentId) {
+      result = result.filter(report => report.intern.studentId === studentFilterStudentId);
+    }
+
+    return result;
+  }, [reports, filterType, filterDate, studentFilterType, studentFilterGrade, studentFilterStudentId]);
 
   // Compute Missing Students
   const missingStudents = useMemo(() => {
     if (filterType !== "daily" || students.length === 0) return [];
     
-    // Get array of studentIds who submitted report on this day
     const submittedIds = filteredReports.map(r => r.intern.studentId);
-    
-    // Find students who are NOT in submittedIds
-    return students.filter(s => !submittedIds.includes(s.studentId));
-  }, [filteredReports, students, filterType]);
+    let eligibleStudents = students.filter(s => s.isInterning !== false);
+
+    if (studentFilterType === "grade" && studentFilterGrade) {
+      eligibleStudents = eligibleStudents.filter(s => s.grade === studentFilterGrade);
+    } else if (studentFilterType === "individual" && studentFilterStudentId) {
+      eligibleStudents = eligibleStudents.filter(s => s.studentId === studentFilterStudentId);
+    }
+
+    return eligibleStudents.filter(s => !submittedIds.includes(s.studentId));
+  }, [filteredReports, students, filterType, studentFilterType, studentFilterGrade, studentFilterStudentId]);
 
   const handleDeleteReport = async (id: string, name: string) => {
     if (!confirm(`คุณต้องการลบข้อมูลรายงานของ "${name}" ใช่หรือไม่?`)) return;
@@ -198,7 +217,58 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        <div className="w-full border-b my-2 md:hidden"></div>
+        <div className="border-l border-gray-200 h-10 mx-2 hidden md:block print:hidden"></div>
+
+        <div className="print:hidden">
+          <label className="block text-sm font-medium text-gray-700 mb-1">การกรองรายชื่อ</label>
+          <select 
+            value={studentFilterType} 
+            onChange={e => {
+              setStudentFilterType(e.target.value as any);
+              setStudentFilterGrade("");
+              setStudentFilterStudentId("");
+            }}
+            className="border border-gray-300 bg-white text-gray-900 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none w-full min-w-[140px]"
+          >
+            <option value="all">นักเรียนทั้งหมด</option>
+            <option value="grade">เฉพาะชั้นเรียน</option>
+            <option value="individual">รายบุคคล</option>
+          </select>
+        </div>
+
+        {studentFilterType === "grade" && (
+          <div className="print:hidden">
+            <label className="block text-sm font-medium text-gray-700 mb-1">เลือกระดับชั้น</label>
+            <select
+              value={studentFilterGrade}
+              onChange={e => setStudentFilterGrade(e.target.value)}
+              className="border border-gray-300 bg-white text-gray-900 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none w-full min-w-[120px]"
+            >
+              <option value="">-- เลือกชั้น --</option>
+              {Array.from(new Set(students.map(s => s.grade))).filter(Boolean).sort().map(grade => (
+                <option key={grade} value={grade}>{grade}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {studentFilterType === "individual" && (
+          <div className="print:hidden">
+            <label className="block text-sm font-medium text-gray-700 mb-1">เลือกนักเรียน</label>
+            <select
+              value={studentFilterStudentId}
+              onChange={e => setStudentFilterStudentId(e.target.value)}
+              className="border border-gray-300 bg-white text-gray-900 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none w-full max-w-[200px]"
+            >
+              <option value="">-- เลือกนักเรียน --</option>
+              {students.filter(s => s.isInterning !== false).sort((a,b) => a.studentId.localeCompare(b.studentId)).map(s => (
+                <option key={s.studentId} value={s.studentId}>{s.studentId} - {s.name}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        <div className="w-full border-b my-2 md:hidden print:hidden"></div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">ภาคเรียนที่</label>

@@ -11,6 +11,7 @@ type Student = {
   studentId: string;
   grade: string;
   studentNumber: string;
+  isInterning?: boolean;
 };
 
 export default function ManageStudentsPage() {
@@ -133,6 +134,21 @@ export default function ManageStudentsPage() {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "รายชื่อนักเรียน");
     XLSX.writeFile(wb, "ตัวอย่างไฟล์นำเข้ารายชื่อนักเรียน.xlsx");
+  };
+
+  const handleToggleStatus = async (id: string, currentStatus: boolean) => {
+    const newStatus = !currentStatus;
+    setStudents(prev => prev.map(s => s.id === id ? { ...s, isInterning: newStatus } : s));
+    
+    try {
+      await fetch("/api/students", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "update_status", id, isInterning: newStatus })
+      });
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -303,6 +319,7 @@ export default function ManageStudentsPage() {
                     <th className="p-3">ชื่อ-นามสกุล</th>
                     <th className="p-3">ชั้น</th>
                     <th className="p-3">เลขที่</th>
+                    <th className="p-3">สถานะ</th>
                     <th className="p-3 rounded-tr-lg"></th>
                   </tr>
                 </thead>
@@ -313,6 +330,14 @@ export default function ManageStudentsPage() {
                       <td className="p-3 text-gray-800">{s.name}</td>
                       <td className="p-3 text-gray-600">{s.grade}</td>
                       <td className="p-3 text-gray-600">{s.studentNumber}</td>
+                      <td className="p-3">
+                        <button 
+                          onClick={() => handleToggleStatus(s.id, s.isInterning !== false)}
+                          className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${s.isInterning !== false ? 'bg-green-100 text-green-800 border border-green-200 hover:bg-green-200' : 'bg-gray-100 text-gray-500 border border-gray-200 hover:bg-gray-200'}`}
+                        >
+                          {s.isInterning !== false ? 'ฝึกงาน' : 'ไม่ฝึก'}
+                        </button>
+                      </td>
                       <td className="p-3 text-right">
                         <button onClick={() => handleDelete(s.id)} className="text-red-500 hover:text-red-700 hover:bg-red-50 p-1.5 rounded-lg transition">
                           <Trash2 size={18} />
