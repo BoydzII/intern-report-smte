@@ -33,9 +33,12 @@ export default function ManageStudentsPage() {
       const data = await res.json();
       if (data.success) {
         setStudents(data.students);
+      } else {
+        alert("เซิร์ฟเวอร์แจ้งข้อผิดพลาด: " + (data.error || "ดึงข้อมูลไม่ได้"));
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
+      alert("ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้: " + error.message);
     } finally {
       setLoading(false);
     }
