@@ -390,7 +390,8 @@ export default function ManageStudentsPage() {
                     </th>
                     <th className="p-3">เลขประจำตัว</th>
                     <th className="p-3">ชื่อ-นามสกุล</th>
-                    <th className="p-3">ชั้น/เลขที่</th>
+                    <th className="p-3">ชั้น</th>
+                    <th className="p-3">เลขที่</th>
                     <th className="p-3">ช่วงเวลาฝึกงาน</th>
                     <th className="p-3">สถานะ</th>
                     <th className="p-3 rounded-tr-lg"></th>
@@ -404,7 +405,8 @@ export default function ManageStudentsPage() {
                       </td>
                       <td className="p-3 font-medium text-blue-700">{s.studentId}</td>
                       <td className="p-3 text-gray-800">{s.name}</td>
-                      <td className="p-3 text-gray-600">{s.grade} / {s.studentNumber}</td>
+                      <td className="p-3 text-gray-600">{s.grade}</td>
+                      <td className="p-3 text-gray-600">{s.studentNumber}</td>
                       <td className="p-3 text-xs text-gray-600">
                         {s.startDate && s.endDate ? (
                           <div className="flex flex-col gap-0.5">
