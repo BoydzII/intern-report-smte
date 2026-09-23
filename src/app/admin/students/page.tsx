@@ -22,6 +22,7 @@ export default function ManageStudentsPage() {
   const [showPeriodModal, setShowPeriodModal] = useState(false);
   const [periodStart, setPeriodStart] = useState("");
   const [periodEnd, setPeriodEnd] = useState("");
+  const [assignGrade, setAssignGrade] = useState("");
   const [loading, setLoading] = useState(true);
   
   const [name, setName] = useState("");
@@ -344,11 +345,17 @@ export default function ManageStudentsPage() {
             <div className="flex gap-2">
               <button
                 type="button"
-                onClick={() => selectedIds.length > 0 ? setShowPeriodModal(true) : alert('กรุณาติ๊กเลือกนักเรียนในตารางก่อนครับ')}
-                className={`text-xs px-3 py-1.5 rounded-lg border transition flex items-center gap-1.5 font-medium shadow-xs ${selectedIds.length > 0 ? 'text-white bg-indigo-600 hover:bg-indigo-700 border-indigo-700' : 'text-gray-400 bg-gray-100 border-gray-200 cursor-not-allowed'}`}
+                onClick={() => {
+                  setSelectedIds([]);
+                  setPeriodStart("");
+                  setPeriodEnd("");
+                  setAssignGrade("");
+                  setShowPeriodModal(true);
+                }}
+                className="text-xs text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-lg border border-indigo-700 transition flex items-center gap-1.5 font-medium shadow-xs"
               >
                 <Users size={14} />
-                <span>ตั้งเวลาฝึกงาน {selectedIds.length > 0 ? `(${selectedIds.length})` : ''}</span>
+                <span>กำหนดเวลาฝึกงาน (แบบกลุ่ม)</span>
               </button>
               <button
                 type="button"
@@ -439,24 +446,106 @@ export default function ManageStudentsPage() {
 
       {showPeriodModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
-            <div className="p-4 border-b border-gray-100 bg-gray-50">
-              <h3 className="font-bold text-lg text-gray-800">กำหนดช่วงเวลาฝึกงาน</h3>
-              <p className="text-sm text-gray-500">สำหรับนักเรียน {selectedIds.length} คนที่เลือก</p>
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="p-4 border-b border-gray-100 bg-gray-50 shrink-0">
+              <h3 className="font-bold text-lg text-gray-800">กำหนดช่วงเวลาฝึกงาน (แบบกลุ่ม)</h3>
+              <p className="text-sm text-gray-500">เลือกช่วงเวลา, ชั้นเรียน, และคลิกเลือกเลขที่นักเรียน</p>
             </div>
-            <div className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">วันที่เริ่มฝึกงาน</label>
-                <input type="date" value={periodStart} onChange={e => setPeriodStart(e.target.value)} className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500 outline-none" />
+            <div className="p-6 space-y-6 overflow-y-auto flex-1">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">วันที่เริ่มฝึกงาน</label>
+                  <input type="date" value={periodStart} onChange={e => setPeriodStart(e.target.value)} className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500 outline-none" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">วันที่สิ้นสุด</label>
+                  <input type="date" value={periodEnd} onChange={e => setPeriodEnd(e.target.value)} className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500 outline-none" />
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">วันที่สิ้นสุด</label>
-                <input type="date" value={periodEnd} onChange={e => setPeriodEnd(e.target.value)} className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500 outline-none" />
+              
+              <div className="border-t border-gray-100 pt-4">
+                <div className="flex items-center justify-between mb-3">
+                  <label className="block text-sm font-medium text-gray-700">เลือกนักเรียนจากชั้นเรียน</label>
+                  <select 
+                    value={assignGrade} 
+                    onChange={e => {
+                      setAssignGrade(e.target.value);
+                      setSelectedIds([]); // Clear selection when changing grade
+                    }}
+                    className="border border-gray-300 rounded-lg p-1.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                  >
+                    <option value="">-- เลือกชั้นเรียน --</option>
+                    {Array.from(new Set(students.map(s => s.grade))).sort().map(g => (
+                      <option key={g} value={g}>{g}</option>
+                    ))}
+                  </select>
+                </div>
+                
+                {assignGrade ? (
+                  <div className="space-y-4">
+                    <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">คลิกเพื่อเลือกเลขที่</span>
+                        <button 
+                          type="button" 
+                          onClick={() => {
+                            const classStudents = students.filter(s => s.grade === assignGrade);
+                            if (selectedIds.length === classStudents.length) {
+                              setSelectedIds([]);
+                            } else {
+                              setSelectedIds(classStudents.map(s => s.id));
+                            }
+                          }}
+                          className="text-xs text-indigo-600 hover:text-indigo-800 font-medium"
+                        >
+                          {selectedIds.length === students.filter(s => s.grade === assignGrade).length ? 'ยกเลิกทั้งหมด' : 'เลือกทั้งหมด'}
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-5 sm:grid-cols-8 md:grid-cols-10 gap-2">
+                        {students
+                          .filter(s => s.grade === assignGrade)
+                          .sort((a, b) => {
+                            const numA = parseInt(a.studentNumber) || 0;
+                            const numB = parseInt(b.studentNumber) || 0;
+                            return numA - numB;
+                          })
+                          .map(s => (
+                          <button
+                            key={s.id}
+                            type="button"
+                            onClick={() => handleToggleSelect(s.id)}
+                            className={`w-10 h-10 rounded border flex items-center justify-center text-sm font-bold transition-colors ${
+                              selectedIds.includes(s.id) 
+                                ? 'bg-indigo-600 text-white border-indigo-700 shadow-inner' 
+                                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100 hover:border-gray-400'
+                            }`}
+                            title={s.name}
+                          >
+                            {s.studentNumber}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div className="bg-blue-50/50 p-3 rounded-lg border border-blue-100">
+                      <p className="text-sm font-semibold text-blue-800 mb-1">นักเรียนที่เลือก ({selectedIds.length} คน):</p>
+                      <p className="text-sm text-blue-700/80 leading-relaxed min-h-[1.5rem]">
+                        {selectedIds.length > 0 
+                          ? students.filter(s => selectedIds.includes(s.id)).map(s => s.name).join(", ") 
+                          : "ยังไม่ได้เลือกนักเรียน"}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                    <p className="text-gray-500 text-sm">กรุณาเลือกชั้นเรียนเพื่อแสดงรายชื่อนักเรียน</p>
+                  </div>
+                )}
               </div>
             </div>
-            <div className="p-4 border-t border-gray-100 flex justify-end gap-2 bg-gray-50">
+            <div className="p-4 border-t border-gray-100 flex justify-end gap-2 bg-gray-50 shrink-0">
               <button onClick={() => setShowPeriodModal(false)} className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 font-medium">ยกเลิก</button>
-              <button onClick={handleSetPeriod} className="px-4 py-2 text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 font-medium">บันทึกข้อมูล</button>
+              <button onClick={handleSetPeriod} className="px-4 py-2 text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 font-medium shadow-sm">บันทึกข้อมูล</button>
             </div>
           </div>
         </div>
