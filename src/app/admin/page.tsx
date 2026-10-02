@@ -200,7 +200,8 @@ export default function AdminDashboard() {
 
       <div className="print:hidden flex justify-between items-end mb-4">
         <h2 className="text-2xl font-bold text-gray-800">สรุปรายงานฝึกงาน</h2>
-        <Link href="/admin/students" className="flex items-center gap-2 bg-white border border-blue-200 text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-50 font-medium transition shadow-sm">
+        <Link href="/admin/groups" className="flex items-center gap-2 bg-white border border-indigo-200 text-indigo-700 px-4 py-2 rounded-lg hover:bg-indigo-50 font-medium transition shadow-sm"><Users size={18} /> จัดการกลุ่มฝึกงาน</Link>
+          <Link href="/admin/students" className="flex items-center gap-2 bg-white border border-blue-200 text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-50 font-medium transition shadow-sm">
           <Users size={18} />
           จัดการฐานข้อมูลนักเรียน ({students.length})
         </Link>
