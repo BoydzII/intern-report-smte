@@ -67,24 +67,66 @@ export async function POST(request: Request) {
       }
       // -----------------------
 
-      data.action = 'addReport';
-      const res = await fetch(GAS_URL, {
+      // Prepare payload supporting both 'upload' (deployed GAS) and 'addReport' (new GAS)
+      const studentName = data.internName || (data.student && data.student.name) || "";
+      const sId = data.studentId || (data.student && data.student.studentId) || "";
+      const sGrade = data.grade || (data.student && data.student.grade) || "";
+      const sNumber = data.studentNumber || (data.student && data.student.studentNumber) || "";
+      const sDept = data.department || (data.student && data.student.department) || "";
+      const photo = data.photoBase64 || data.base64 || "";
+
+      const gasPayload: any = {
+        action: 'upload',
+        base64: photo,
+        photoBase64: photo,
+        mimeType: 'image/jpeg',
+        fileName: `${studentName}_${data.date || Date.now()}.jpg`,
+        date: data.date,
+        student: {
+          studentId: sId,
+          name: studentName,
+          grade: sGrade,
+          studentNumber: sNumber,
+          department: sDept
+        },
+        internName: studentName,
+        studentId: sId,
+        grade: sGrade,
+        studentNumber: sNumber,
+        department: sDept
+      };
+
+      let res = await fetch(GAS_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        body: JSON.stringify(gasPayload)
       });
-      const responseText = await res.text();
+      let responseText = await res.text();
+      let jsonResult: any;
+
       try {
-        const jsonResult = JSON.parse(responseText);
-        return NextResponse.json(jsonResult);
-      } catch (parseError) {
-        console.error("GAS returned non-JSON response:", responseText);
-        return NextResponse.json({
-          success: false,
-          error: "GAS returned non-JSON: " + responseText.slice(0, 300),
-          gasUrl: GAS_URL
-        }, { status: 502 });
+        jsonResult = JSON.parse(responseText);
+      } catch (e) {
+        // Fallback: If 'upload' didn't return JSON, try 'addReport'
+        gasPayload.action = 'addReport';
+        res = await fetch(GAS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(gasPayload)
+        });
+        responseText = await res.text();
+        try {
+          jsonResult = JSON.parse(responseText);
+        } catch (e2) {
+          console.error("GAS returned non-JSON response:", responseText);
+          return NextResponse.json({
+            success: false,
+            error: "GAS returned non-JSON: " + responseText.slice(0, 300)
+          }, { status: 502 });
+        }
       }
+
+      return NextResponse.json(jsonResult);
     }
 
     // Otherwise use Local JSON
