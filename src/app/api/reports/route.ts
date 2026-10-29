@@ -73,7 +73,18 @@ export async function POST(request: Request) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       });
-      return NextResponse.json(await res.json());
+      const responseText = await res.text();
+      try {
+        const jsonResult = JSON.parse(responseText);
+        return NextResponse.json(jsonResult);
+      } catch (parseError) {
+        console.error("GAS returned non-JSON response:", responseText);
+        return NextResponse.json({
+          success: false,
+          error: "GAS returned non-JSON: " + responseText.slice(0, 300),
+          gasUrl: GAS_URL
+        }, { status: 502 });
+      }
     }
 
     // Otherwise use Local JSON
