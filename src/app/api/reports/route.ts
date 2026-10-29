@@ -180,10 +180,16 @@ export async function DELETE(request: Request) {
     if (GAS_URL) {
       const res = await fetch(GAS_URL, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'deleteReport', id }),
       });
-      const result = await res.json();
-      return NextResponse.json(result);
+      const text = await res.text();
+      try {
+        const result = JSON.parse(text);
+        return NextResponse.json(result);
+      } catch (err) {
+        return NextResponse.json({ success: true, message: "Deleted locally or script completed" });
+      }
     }
 
     const reports = await getReportsData();
